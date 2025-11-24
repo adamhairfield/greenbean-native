@@ -1,0 +1,61 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
+export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Main: NavigatorScreenParams<MainTabParamList>;
+};
+
+export type AuthStackParamList = {
+  Welcome: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
+};
+
+export type MainTabParamList = {
+  Shop: NavigatorScreenParams<ShopStackParamList>;
+  Orders: NavigatorScreenParams<OrdersStackParamList>;
+  Account: NavigatorScreenParams<AccountStackParamList>;
+  Driver: NavigatorScreenParams<DriverStackParamList> | undefined;
+  Admin: NavigatorScreenParams<AdminStackParamList> | undefined;
+};
+
+export type ShopStackParamList = {
+  Home: undefined;
+  Category: { categoryId: string; categoryName: string };
+  ProductDetail: { productId: string };
+  Cart: undefined;
+  Checkout: undefined;
+  OrderConfirmation: { orderId: string };
+};
+
+export type OrdersStackParamList = {
+  OrdersList: undefined;
+  OrderDetail: { orderId: string };
+};
+
+export type AccountStackParamList = {
+  Profile: undefined;
+  EditProfile: undefined;
+  Addresses: undefined;
+  AddAddress: undefined;
+  EditAddress: { addressId: string };
+  Favorites: undefined;
+  Settings: undefined;
+};
+
+export type DriverStackParamList = {
+  DeliveryList: undefined;
+  DeliveryDetail: { orderId: string };
+  DeliveryMap: undefined;
+};
+
+export type AdminStackParamList = {
+  Dashboard: undefined;
+  ProductManagement: undefined;
+  AddProduct: undefined;
+  EditProduct: { productId: string };
+  OrderManagement: undefined;
+  DriverManagement: undefined;
+  DeliverySchedules: undefined;
+  Analytics: undefined;
+};
