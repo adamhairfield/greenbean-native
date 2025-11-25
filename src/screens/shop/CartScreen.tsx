@@ -28,19 +28,19 @@ type CartScreenProps = {
 const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
   const { items, loading, updateQuantity, removeItem, subtotal: cartSubtotal } = useCart();
 
-  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {
-      handleRemoveItem(itemId);
+      handleRemoveItem(productId);
       return;
     }
     try {
-      await updateQuantity(itemId, newQuantity);
+      await updateQuantity(productId, newQuantity);
     } catch (error) {
       Alert.alert('Error', 'Failed to update quantity');
     }
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = (productId: string) => {
     Alert.alert(
       'Remove Item',
       'Are you sure you want to remove this item from your cart?',
@@ -51,7 +51,7 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await removeItem(itemId);
+              await removeItem(productId);
             } catch (error) {
               Alert.alert('Error', 'Failed to remove item');
             }
@@ -145,7 +145,7 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.quantityButton}
                     onPress={() =>
-                      handleUpdateQuantity(item.id, item.quantity - 1)
+                      handleUpdateQuantity(item.product_id, item.quantity - 1)
                     }
                   >
                     <Ionicons name="remove" size={20} color="#333" />
@@ -154,7 +154,7 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.quantityButton}
                     onPress={() =>
-                      handleUpdateQuantity(item.id, item.quantity + 1)
+                      handleUpdateQuantity(item.product_id, item.quantity + 1)
                     }
                   >
                     <Ionicons name="add" size={20} color="#333" />
@@ -174,7 +174,7 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.removeButton}
-              onPress={() => handleRemoveItem(item.id)}
+              onPress={() => handleRemoveItem(item.product_id)}
             >
               <Ionicons name="trash-outline" size={24} color="#f44336" />
             </TouchableOpacity>

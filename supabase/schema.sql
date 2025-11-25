@@ -235,11 +235,18 @@ CREATE POLICY "Drivers can view delivery addresses" ON addresses
     );
 
 -- Sellers policies
-CREATE POLICY "Sellers can view own profile" ON sellers
-    FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Users can create their own seller account" ON sellers
+    FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Sellers can update own profile" ON sellers
-    FOR UPDATE USING (user_id = auth.uid());
+CREATE POLICY "Users can view their own seller account" ON sellers
+    FOR SELECT TO authenticated
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own seller account" ON sellers
+    FOR UPDATE TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Admins can view all seller profiles" ON sellers
     FOR SELECT USING (

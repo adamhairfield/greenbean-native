@@ -16,6 +16,7 @@ export type MainTabParamList = {
   Cart: NavigatorScreenParams<CartStackParamList>;
   Orders: NavigatorScreenParams<OrdersStackParamList>;
   Account: NavigatorScreenParams<AccountStackParamList>;
+  Seller: NavigatorScreenParams<SellerStackParamList> | undefined;
   Driver: NavigatorScreenParams<DriverStackParamList> | undefined;
   Admin: NavigatorScreenParams<AdminStackParamList> | undefined;
 };
@@ -46,6 +47,15 @@ export type AccountStackParamList = {
   EditAddress: { addressId: string };
   Favorites: undefined;
   Settings: undefined;
+  BecomeSeller: undefined;
+  SellerOnboardingStatus: undefined;
+};
+
+export type SellerStackParamList = {
+  SellerDashboard: undefined;
+  SellerProducts: undefined;
+  AddSellerProduct: undefined;
+  EditSellerProduct: { productId: string };
 };
 
 export type DriverStackParamList = {
@@ -61,6 +71,7 @@ export type AdminStackParamList = {
   EditProduct: { productId: string };
   OrderManagement: undefined;
   DriverManagement: undefined;
+  ManageSellers: undefined;
   DeliverySchedules: undefined;
   Analytics: undefined;
 };

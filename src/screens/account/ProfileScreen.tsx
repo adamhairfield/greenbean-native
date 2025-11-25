@@ -1,10 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AccountStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
-const ProfileScreen = () => {
-  const { profile, user, signOut } = useAuth();
+type ProfileScreenProps = {
+  navigation: NativeStackNavigationProp<AccountStackParamList, 'Profile'>;
+};
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+  const { profile, user, signOut, isRole } = useAuth();
 
   const handleLogout = () => {
     Alert.alert(
@@ -72,6 +78,54 @@ const ProfileScreen = () => {
           </View>
         </View>
       </View>
+
+      {/* Account Actions */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Settings</Text>
+        
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Addresses')}
+        >
+          <Ionicons name="location-outline" size={24} color="#4CAF50" />
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemTitle}>Delivery Addresses</Text>
+            <Text style={styles.menuItemSubtitle}>Manage your delivery locations</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#999" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Favorites')}
+        >
+          <Ionicons name="heart-outline" size={24} color="#4CAF50" />
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemTitle}>Favorites</Text>
+            <Text style={styles.menuItemSubtitle}>Your saved products</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#999" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Become a Seller Button - Only show for non-sellers */}
+      {!isRole(['seller', 'admin', 'master']) && (
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={styles.becomeSellerButton} 
+            onPress={() => navigation.navigate('BecomeSeller')}
+          >
+            <Ionicons name="storefront-outline" size={24} color="#4CAF50" />
+            <View style={styles.becomeSellerContent}>
+              <Text style={styles.becomeSellerTitle}>Become a Seller</Text>
+              <Text style={styles.becomeSellerSubtitle}>
+                Start selling your farm-fresh products
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.section}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -153,11 +207,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  becomeSellerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  becomeSellerContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  becomeSellerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  becomeSellerSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  menuItemContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  menuItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  menuItemSubtitle: {
+    fontSize: 12,
+    color: '#666',
+  },
   logoutButton: {
-    backgroundColor: '#f44336',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f44336',
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 10,

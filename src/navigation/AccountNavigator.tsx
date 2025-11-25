@@ -8,6 +8,8 @@ import AddAddressScreen from '../screens/account/AddAddressScreen';
 import EditAddressScreen from '../screens/account/EditAddressScreen';
 import FavoritesScreen from '../screens/account/FavoritesScreen';
 import SettingsScreen from '../screens/account/SettingsScreen';
+import BecomeSellerScreen from '../screens/seller/BecomeSellerScreen';
+import SellerOnboardingStatusScreen from '../screens/seller/SellerOnboardingStatusScreen';
 
 const Stack = createNativeStackNavigator<AccountStackParamList>();
 
@@ -48,6 +50,16 @@ const AccountNavigator = () => {
         name="Settings" 
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen 
+        name="BecomeSeller" 
+        component={BecomeSellerScreen}
+        options={{ title: 'Become a Seller' }}
+      />
+      <Stack.Screen 
+        name="SellerOnboardingStatus" 
+        component={SellerOnboardingStatusScreen}
+        options={{ title: 'Onboarding Status' }}
       />
     </Stack.Navigator>
   );

@@ -7,6 +7,7 @@ import AddProductScreen from '../screens/admin/AddProductScreen';
 import EditProductScreen from '../screens/admin/EditProductScreen';
 import OrderManagementScreen from '../screens/admin/OrderManagementScreen';
 import DriverManagementScreen from '../screens/admin/DriverManagementScreen';
+import ManageSellersScreen from '../screens/admin/ManageSellersScreen';
 import DeliverySchedulesScreen from '../screens/admin/DeliverySchedulesScreen';
 import AnalyticsScreen from '../screens/admin/AnalyticsScreen';
 
@@ -44,6 +45,11 @@ const AdminNavigator = () => {
         name="DriverManagement" 
         component={DriverManagementScreen}
         options={{ title: 'Manage Drivers' }}
+      />
+      <Stack.Screen 
+        name="ManageSellers" 
+        component={ManageSellersScreen}
+        options={{ title: 'Manage Sellers' }}
       />
       <Stack.Screen 
         name="DeliverySchedules" 

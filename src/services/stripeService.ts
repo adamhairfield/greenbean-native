@@ -76,21 +76,46 @@ export const createConnectAccount = async (
   params: CreateConnectAccountParams
 ): Promise<CreateConnectAccountResponse> => {
   try {
-    const { data, error } = await supabase.functions.invoke('create-connect-account', {
-      body: {
+    // Get the current session to ensure we have an auth token
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
+
+    console.log('Calling Edge Function with auth token:', session.access_token ? 'Present' : 'Missing');
+
+    // Use fetch directly to ensure headers are passed correctly
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/create-connect-account`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+      },
+      body: JSON.stringify({
         user_id: params.userId,
         business_name: params.businessName,
         business_email: params.businessEmail,
         business_phone: params.businessPhone,
         business_address: params.businessAddress,
-      },
+      }),
     });
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Edge Function error response:', errorData);
+      throw new Error(errorData.message || 'Edge Function failed');
+    }
+
+    const data = await response.json();
+    
+    console.log('Connect account created:', data);
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating Connect account:', error);
-    throw new Error('Failed to create Stripe Connect account');
+    throw new Error(error?.message || 'Failed to create Stripe Connect account');
   }
 };
 
@@ -120,15 +145,36 @@ export const refreshOnboardingLink = async (
   accountId: string
 ): Promise<{ url: string }> => {
   try {
-    const { data, error } = await supabase.functions.invoke('refresh-onboarding-link', {
-      body: { account_id: accountId },
+    // Get the current session
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
+
+    // Use fetch directly to ensure headers are passed correctly
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/refresh-onboarding-link`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+      },
+      body: JSON.stringify({ account_id: accountId }),
     });
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Edge Function error response:', errorData);
+      throw new Error(errorData.message || 'Edge Function failed');
+    }
+
+    const data = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error refreshing onboarding link:', error);
-    throw new Error('Failed to refresh onboarding link');
+    throw new Error(error?.message || 'Failed to refresh onboarding link');
   }
 };
 

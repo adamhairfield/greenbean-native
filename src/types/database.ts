@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       addresses: {
@@ -167,10 +142,8 @@ export type Database = {
       delivery_schedules: {
         Row: {
           created_at: string | null
-          current_orders: number | null
-          cutoff_date: string
-          delivery_date: string
-          delivery_window: Database["public"]["Enums"]["delivery_window"]
+          cutoff_days_before: number | null
+          day_of_week: string
           id: string
           is_active: boolean | null
           max_orders: number | null
@@ -178,10 +151,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          current_orders?: number | null
-          cutoff_date: string
-          delivery_date: string
-          delivery_window: Database["public"]["Enums"]["delivery_window"]
+          cutoff_days_before?: number | null
+          day_of_week: string
           id?: string
           is_active?: boolean | null
           max_orders?: number | null
@@ -189,10 +160,8 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          current_orders?: number | null
-          cutoff_date?: string
-          delivery_date?: string
-          delivery_window?: Database["public"]["Enums"]["delivery_window"]
+          cutoff_days_before?: number | null
+          day_of_week?: string
           id?: string
           is_active?: boolean | null
           max_orders?: number | null
@@ -383,6 +352,7 @@ export type Database = {
           created_at: string | null
           customer_id: string
           delivery_address_id: string
+          delivery_date: string | null
           delivery_fee: number | null
           delivery_schedule_id: string | null
           driver_id: string | null
@@ -402,6 +372,7 @@ export type Database = {
           created_at?: string | null
           customer_id: string
           delivery_address_id: string
+          delivery_date?: string | null
           delivery_fee?: number | null
           delivery_schedule_id?: string | null
           driver_id?: string | null
@@ -421,6 +392,7 @@ export type Database = {
           created_at?: string | null
           customer_id?: string
           delivery_address_id?: string
+          delivery_date?: string | null
           delivery_fee?: number | null
           delivery_schedule_id?: string | null
           driver_id?: string | null
@@ -689,6 +661,19 @@ export type Database = {
     }
     Functions: {
       generate_order_number: { Args: never; Returns: string }
+      get_available_delivery_slots: {
+        Args: never
+        Returns: {
+          cutoff_days_before: number
+          day_of_week: string
+          is_active: boolean
+          max_orders: number
+          next_delivery_date: string
+          orders_count: number
+          schedule_id: string
+          slots_available: number
+        }[]
+      }
       get_seller_stats: {
         Args: { seller_uuid: string }
         Returns: {
@@ -842,9 +827,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       delivery_window: ["monday_wednesday", "thursday_saturday"],

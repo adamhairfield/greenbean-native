@@ -5,6 +5,7 @@ import ShopNavigator from './ShopNavigator';
 import CartNavigator from './CartNavigator';
 import OrdersNavigator from './OrdersNavigator';
 import AccountNavigator from './AccountNavigator';
+import SellerNavigator from './SellerNavigator';
 import DriverNavigator from './DriverNavigator';
 import AdminNavigator from './AdminNavigator';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +19,9 @@ const MainNavigator = () => {
   const { isRole } = useAuth();
   const { itemCount } = useCart();
 
+  const isMasterAdmin = isRole(['master']);
+  const isSeller = isRole(['seller']);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -26,43 +30,61 @@ const MainNavigator = () => {
         tabBarInactiveTintColor: '#999',
       }}
     >
-      <Tab.Screen
-        name="Shop"
-        component={ShopNavigator}
-        options={{
-          tabBarLabel: 'Shop',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="storefront-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Cart"
-        component={CartNavigator}
-        options={{
-          tabBarLabel: 'Cart',
-          tabBarIcon: ({ color, size }) => (
-            <View>
-              <Ionicons name="cart-outline" size={size} color={color} />
-              {itemCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{itemCount}</Text>
+      {/* Hide Shop and Cart for master admins and sellers */}
+      {!isMasterAdmin && !isSeller && (
+        <>
+          <Tab.Screen
+            name="Shop"
+            component={ShopNavigator}
+            options={{
+              tabBarLabel: 'Shop',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="storefront-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Cart"
+            component={CartNavigator}
+            options={{
+              tabBarLabel: 'Cart',
+              tabBarIcon: ({ color, size }) => (
+                <View>
+                  <Ionicons name="cart-outline" size={size} color={color} />
+                  {itemCount > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{itemCount}</Text>
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
-          ),
-        }}
-      />
+              ),
+            }}
+          />
+        </>
+      )}
+      {/* Show Orders for everyone - master admins see all orders, others see their own */}
       <Tab.Screen
         name="Orders"
         component={OrdersNavigator}
         options={{
           tabBarLabel: 'Orders',
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size}) => (
             <Ionicons name="receipt-outline" size={size} color={color} />
           ),
         }}
       />
+      {isRole(['seller', 'admin']) && !isMasterAdmin && (
+        <Tab.Screen
+          name="Seller"
+          component={SellerNavigator}
+          options={{
+            tabBarLabel: 'Sell',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="storefront-outline" size={size} color={color} />
+            ),
+          }}
+        />
+      )}
       {isRole(['driver', 'admin', 'master']) && (
         <Tab.Screen
           name="Driver"

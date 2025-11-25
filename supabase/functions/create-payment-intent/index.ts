@@ -42,62 +42,12 @@ serve(async (req) => {
       throw new Error('Not authenticated')
     }
 
-    const { order_id, amount, currency = 'usd' } = await req.json()
+    const { order_id, amount, currency = 'usd', items } = await req.json()
 
-    // Fetch order details to calculate seller splits
-    const { data: order, error: orderError } = await supabaseClient
-      .from('orders')
-      .select(`
-        *,
-        order_items (
-          *,
-          products (
-            *,
-            sellers (*)
-          )
-        )
-      `)
-      .eq('id', order_id)
-      .single()
-
-    if (orderError) throw orderError
-
-    // Group order items by seller and calculate amounts
-    const sellerTransfers: any[] = []
-    const itemsBySeller = new Map()
-
-    for (const item of order.order_items) {
-      const sellerId = item.products?.seller_id
-      if (!sellerId) continue // Skip items without sellers (platform products)
-
-      if (!itemsBySeller.has(sellerId)) {
-        itemsBySeller.set(sellerId, {
-          seller: item.products.sellers,
-          items: [],
-          subtotal: 0,
-        })
-      }
-
-      const sellerData = itemsBySeller.get(sellerId)
-      sellerData.items.push(item)
-      sellerData.subtotal += item.total_price
-    }
-
-    // Calculate transfers for each seller
-    for (const [sellerId, data] of itemsBySeller) {
-      const platformFeePercentage = data.seller.platform_fee_percentage || 10
-      const platformFee = data.subtotal * (platformFeePercentage / 100)
-      const sellerAmount = data.subtotal - platformFee
-
-      if (data.seller.stripe_account_id && data.seller.stripe_charges_enabled) {
-        sellerTransfers.push({
-          seller_id: sellerId,
-          stripe_account_id: data.seller.stripe_account_id,
-          amount: Math.round(sellerAmount * 100), // Convert to cents
-          platform_fee: Math.round(platformFee * 100),
-        })
-      }
-    }
+    // For now, we'll create a simple payment intent without seller splits
+    // Seller splits will be calculated by webhook after order is created
+    console.log('Creating payment intent for amount:', amount)
+    console.log('Order ID (may be temporary):', order_id)
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
@@ -113,15 +63,8 @@ serve(async (req) => {
       },
     })
 
-    // Store transfer information for later processing
-    // This will be used by a webhook to create actual transfers after payment succeeds
-    await supabaseClient
-      .from('orders')
-      .update({
-        payment_intent_id: paymentIntent.id,
-        seller_transfers: sellerTransfers,
-      })
-      .eq('id', order_id)
+    // Note: Seller transfers will be calculated by webhook after order is created
+    // For now, we just create the payment intent
 
     return new Response(
       JSON.stringify({

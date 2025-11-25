@@ -45,14 +45,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
       if (categoriesData) setCategories(categoriesData);
 
-      // Fetch featured products
-      const { data: productsData } = await supabase
+      // Fetch featured products - show all available products for now
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*')
         .eq('is_available', true)
+        .order('created_at', { ascending: false })
         .limit(6);
 
-      if (productsData) setFeaturedProducts(productsData);
+      if (productsError) {
+        console.error('Error fetching products:', productsError);
+      }
+      
+      console.log('Featured products:', productsData?.map(p => ({ name: p.name, seller_id: p.seller_id })));
+      
+      if (productsData) {
+        setFeaturedProducts(productsData);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
