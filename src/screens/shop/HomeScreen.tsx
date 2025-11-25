@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ShopStackParamList } from '../../navigation/types';
@@ -24,7 +25,6 @@ type HomeScreenProps = {
 };
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { itemCount } = useCart();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,17 +77,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <Text style={styles.greeting}>Welcome to</Text>
           <Text style={styles.title}>Greenbean Market 🌱</Text>
         </View>
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={() => navigation.navigate('Cart')}
-        >
-          <Ionicons name="cart-outline" size={28} color="#4CAF50" />
-          {itemCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{itemCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -159,9 +148,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     })
                   }
                 >
-                  <View style={styles.productImage}>
-                    <Text style={styles.productEmoji}>🥬</Text>
-                  </View>
+                  {product.image_url ? (
+                    <Image
+                      source={{ uri: product.image_url }}
+                      style={styles.productImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.productImage}>
+                      <Text style={styles.productEmoji}>🥬</Text>
+                    </View>
+                  )}
                   <Text style={styles.productName} numberOfLines={2}>
                     {product.name}
                   </Text>
@@ -213,9 +210,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -229,26 +223,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-  },
-  cartButton: {
-    position: 'relative',
-    padding: 8,
-  },
-  badge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: '#f44336',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   content: {
     flex: 1,

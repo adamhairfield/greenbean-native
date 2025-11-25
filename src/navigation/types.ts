@@ -13,6 +13,7 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Shop: NavigatorScreenParams<ShopStackParamList>;
+  Cart: NavigatorScreenParams<CartStackParamList>;
   Orders: NavigatorScreenParams<OrdersStackParamList>;
   Account: NavigatorScreenParams<AccountStackParamList>;
   Driver: NavigatorScreenParams<DriverStackParamList> | undefined;
@@ -23,9 +24,13 @@ export type ShopStackParamList = {
   Home: undefined;
   Category: { categoryId: string; categoryName: string };
   ProductDetail: { productId: string };
-  Cart: undefined;
+};
+
+export type CartStackParamList = {
+  CartMain: undefined;
   Checkout: undefined;
   OrderConfirmation: { orderId: string };
+  ProductDetail: { productId: string };
 };
 
 export type OrdersStackParamList = {

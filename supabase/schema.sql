@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create enum types
-CREATE TYPE user_role AS ENUM ('customer', 'driver', 'admin', 'master');
+CREATE TYPE user_role AS ENUM ('customer', 'seller', 'driver', 'admin', 'master');
 CREATE TYPE order_status AS ENUM ('pending', 'confirmed', 'preparing', 'ready_for_delivery', 'out_for_delivery', 'delivered', 'cancelled');
 CREATE TYPE delivery_window AS ENUM ('monday_wednesday', 'thursday_saturday');
 CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded');
@@ -49,9 +49,33 @@ CREATE TABLE categories (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Sellers table (for Stripe Connect)
+CREATE TABLE sellers (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,
+    business_name TEXT NOT NULL,
+    business_description TEXT,
+    business_address TEXT,
+    business_phone TEXT,
+    business_email TEXT,
+    stripe_account_id TEXT UNIQUE,
+    stripe_account_status TEXT DEFAULT 'pending',
+    stripe_onboarding_completed BOOLEAN DEFAULT false,
+    stripe_charges_enabled BOOLEAN DEFAULT false,
+    stripe_payouts_enabled BOOLEAN DEFAULT false,
+    platform_fee_percentage DECIMAL(5, 2) DEFAULT 10.00,
+    delivery_fee_percentage DECIMAL(5, 2) DEFAULT 100.00,
+    is_verified BOOLEAN DEFAULT false,
+    verification_notes TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Products table
 CREATE TABLE products (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    seller_id UUID REFERENCES sellers(id) ON DELETE CASCADE,
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     description TEXT,
@@ -178,6 +202,7 @@ CREATE INDEX idx_notifications_is_read ON notifications(user_id, is_read);
 -- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sellers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE delivery_schedules ENABLE ROW LEVEL SECURITY;
@@ -197,10 +222,7 @@ CREATE POLICY "Users can update their own profile" ON profiles
 
 CREATE POLICY "Admins and masters can view all profiles" ON profiles
     FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Addresses policies
@@ -209,10 +231,24 @@ CREATE POLICY "Users can manage their own addresses" ON addresses
 
 CREATE POLICY "Drivers can view delivery addresses" ON addresses
     FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('driver', 'admin', 'master')
-        )
+        public.user_has_role(ARRAY['driver', 'admin', 'master']::user_role[])
+    );
+
+-- Sellers policies
+CREATE POLICY "Sellers can view own profile" ON sellers
+    FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Sellers can update own profile" ON sellers
+    FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY "Admins can view all seller profiles" ON sellers
+    FOR SELECT USING (
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
+    );
+
+CREATE POLICY "Admins can manage all seller profiles" ON sellers
+    FOR ALL USING (
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Categories policies (public read, admin write)
@@ -221,22 +257,52 @@ CREATE POLICY "Anyone can view active categories" ON categories
 
 CREATE POLICY "Admins can manage categories" ON categories
     FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
--- Products policies (public read, admin write)
+-- Products policies (public read, seller/admin write)
 CREATE POLICY "Anyone can view available products" ON products
     FOR SELECT USING (is_available = true);
 
+CREATE POLICY "Sellers can view own products" ON products
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM sellers
+            WHERE sellers.id = products.seller_id
+            AND sellers.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Sellers can insert own products" ON products
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM sellers
+            WHERE sellers.id = products.seller_id
+            AND sellers.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Sellers can update own products" ON products
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM sellers
+            WHERE sellers.id = products.seller_id
+            AND sellers.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Sellers can delete own products" ON products
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM sellers
+            WHERE sellers.id = products.seller_id
+            AND sellers.user_id = auth.uid()
+        )
+    );
+
 CREATE POLICY "Admins can manage products" ON products
     FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Delivery schedules policies
@@ -245,10 +311,7 @@ CREATE POLICY "Anyone can view active delivery schedules" ON delivery_schedules
 
 CREATE POLICY "Admins can manage delivery schedules" ON delivery_schedules
     FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Orders policies
@@ -261,19 +324,13 @@ CREATE POLICY "Customers can create orders" ON orders
 CREATE POLICY "Drivers can view assigned orders" ON orders
     FOR SELECT USING (
         auth.uid() = driver_id OR
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 CREATE POLICY "Drivers can update assigned orders" ON orders
     FOR UPDATE USING (
         auth.uid() = driver_id OR
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Order items policies
@@ -284,10 +341,7 @@ CREATE POLICY "Users can view order items for their orders" ON order_items
             WHERE orders.id = order_items.order_id
             AND (orders.customer_id = auth.uid() OR orders.driver_id = auth.uid())
         ) OR
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 CREATE POLICY "Customers can create order items" ON order_items
@@ -311,18 +365,12 @@ CREATE POLICY "Users can manage their own favorites" ON favorites
 CREATE POLICY "Drivers can view their assignments" ON driver_assignments
     FOR SELECT USING (
         auth.uid() = driver_id OR
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 CREATE POLICY "Admins can manage driver assignments" ON driver_assignments
     FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid() AND role IN ('admin', 'master')
-        )
+        public.user_has_role(ARRAY['admin', 'master']::user_role[])
     );
 
 -- Notifications policies
@@ -333,6 +381,23 @@ CREATE POLICY "Users can update their own notifications" ON notifications
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- Functions and Triggers
+
+-- Helper function to check user role without triggering RLS
+CREATE OR REPLACE FUNCTION public.user_has_role(required_roles user_role[])
+RETURNS BOOLEAN AS $$
+DECLARE
+    user_role_value user_role;
+BEGIN
+    -- Get the user's role directly from profiles table
+    -- SECURITY DEFINER allows this function to bypass RLS
+    SELECT role INTO user_role_value
+    FROM public.profiles
+    WHERE id = auth.uid();
+    
+    -- Check if user's role is in the required roles array
+    RETURN user_role_value = ANY(required_roles);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
