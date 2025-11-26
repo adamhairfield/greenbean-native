@@ -19,6 +19,7 @@ export type MainTabParamList = {
   Seller: NavigatorScreenParams<SellerStackParamList> | undefined;
   Driver: NavigatorScreenParams<DriverStackParamList> | undefined;
   Admin: NavigatorScreenParams<AdminStackParamList> | undefined;
+  Analytics: NavigatorScreenParams<AnalyticsStackParamList> | undefined;
 };
 
 export type ShopStackParamList = {
@@ -74,4 +75,8 @@ export type AdminStackParamList = {
   ManageSellers: undefined;
   DeliverySchedules: undefined;
   Analytics: undefined;
+};
+
+export type AnalyticsStackParamList = {
+  AnalyticsDashboard: undefined;
 };

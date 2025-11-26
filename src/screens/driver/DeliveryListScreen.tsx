@@ -70,7 +70,11 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Parse date string as local date to avoid timezone conversion issues
+    // Handle both date-only (YYYY-MM-DD) and datetime (ISO 8601) formats
+    const dateOnly = dateString.split('T')[0];
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -84,6 +88,17 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
 
   return (
     <View style={styles.container}>
+      {/* View Map Button */}
+      {orders.length > 0 && (
+        <TouchableOpacity
+          style={styles.mapButton}
+          onPress={() => navigation.navigate('DeliveryMap')}
+        >
+          <Ionicons name="map" size={20} color="#fff" />
+          <Text style={styles.mapButtonText}>View Route Map</Text>
+        </TouchableOpacity>
+      )}
+
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}
@@ -148,6 +163,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4CAF50',
+    margin: 16,
+    marginBottom: 0,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  mapButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   listContent: {
     padding: 16,

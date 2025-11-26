@@ -364,30 +364,6 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
           )}
         </View>
 
-        {/* Farm Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Farm Name</Text>
-          <TextInput
-            style={styles.input}
-            value={farmName}
-            onChangeText={setFarmName}
-            placeholder="Your farm name"
-            placeholderTextColor="#999"
-          />
-        </View>
-
-        {/* Farm Location */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Farm Location</Text>
-          <TextInput
-            style={styles.input}
-            value={farmLocation}
-            onChangeText={setFarmLocation}
-            placeholder="City, State"
-            placeholderTextColor="#999"
-          />
-        </View>
-
         {/* Switches */}
         <View style={styles.field}>
           <View style={styles.switchRow}>

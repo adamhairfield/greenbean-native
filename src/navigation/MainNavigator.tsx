@@ -8,6 +8,7 @@ import AccountNavigator from './AccountNavigator';
 import SellerNavigator from './SellerNavigator';
 import DriverNavigator from './DriverNavigator';
 import AdminNavigator from './AdminNavigator';
+import AnalyticsNavigator from './AnalyticsNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ const MainNavigator = () => {
 
   const isMasterAdmin = isRole(['master']);
   const isSeller = isRole(['seller']);
+  const isDriver = isRole(['driver']);
 
   return (
     <Tab.Navigator
@@ -30,8 +32,8 @@ const MainNavigator = () => {
         tabBarInactiveTintColor: '#999',
       }}
     >
-      {/* Hide Shop and Cart for master admins and sellers */}
-      {!isMasterAdmin && !isSeller && (
+      {/* Hide Shop and Cart for master admins, sellers, and drivers */}
+      {!isMasterAdmin && !isSeller && !isDriver && (
         <>
           <Tab.Screen
             name="Shop"
@@ -105,6 +107,18 @@ const MainNavigator = () => {
             tabBarLabel: 'Admin',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="settings-outline" size={size} color={color} />
+            ),
+          }}
+        />
+      )}
+      {isMasterAdmin && (
+        <Tab.Screen
+          name="Analytics"
+          component={AnalyticsNavigator}
+          options={{
+            tabBarLabel: 'Analytics',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="bar-chart-outline" size={size} color={color} />
             ),
           }}
         />

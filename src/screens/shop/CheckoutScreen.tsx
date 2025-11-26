@@ -249,7 +249,10 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Parse date string as local date to avoid timezone conversion issues
+    // dateString format: "YYYY-MM-DD"
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
