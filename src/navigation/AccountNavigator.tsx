@@ -7,19 +7,32 @@ import AddressesScreen from '../screens/account/AddressesScreen';
 import AddAddressScreen from '../screens/account/AddAddressScreen';
 import EditAddressScreen from '../screens/account/EditAddressScreen';
 import FavoritesScreen from '../screens/account/FavoritesScreen';
+import NotificationsScreen from '../screens/account/NotificationsScreen';
+import NotificationSettingsScreen from '../screens/account/NotificationSettingsScreen';
 import SettingsScreen from '../screens/account/SettingsScreen';
 import BecomeSellerScreen from '../screens/seller/BecomeSellerScreen';
 import SellerOnboardingStatusScreen from '../screens/seller/SellerOnboardingStatusScreen';
+import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
+import { NotificationButton, CustomBackButton } from '../components';
+import { TouchableOpacity } from 'react-native';
+import { MoreVertical } from 'lucide-react-native';
 
 const Stack = createNativeStackNavigator<AccountStackParamList>();
 
 const AccountNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
+      }}
+    >
       <Stack.Screen 
         name="Profile" 
         component={ProfileScreen}
-        options={{ title: 'My Account' }}
+        options={({ navigation }) => ({
+          title: 'My Account',
+          headerRight: () => <NotificationButton onPress={() => navigation.navigate('Notifications')} />,
+        })}
       />
       <Stack.Screen 
         name="EditProfile" 
@@ -47,9 +60,34 @@ const AccountNavigator = () => {
         options={{ title: 'Favorites' }}
       />
       <Stack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={({ navigation }) => ({
+          title: 'Notifications',
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('NotificationSettings')}
+              style={{ marginRight: 16 }}
+            >
+              <MoreVertical size={24} color="#333" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen 
+        name="NotificationSettings" 
+        component={NotificationSettingsScreen}
+        options={{ title: 'Notification Settings' }}
+      />
+      <Stack.Screen 
         name="Settings" 
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen 
+        name="OrderDetail" 
+        component={OrderDetailScreen}
+        options={{ title: 'Order Details' }}
       />
       <Stack.Screen 
         name="BecomeSeller" 

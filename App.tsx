@@ -5,6 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { CartProvider } from './src/contexts/CartContext';
+import { FavoritesProvider } from './src/contexts/FavoritesContext';
+import { NotificationProvider } from './src/contexts/NotificationContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
@@ -15,10 +17,14 @@ export default function App() {
       <SafeAreaProvider>
         <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
           <AuthProvider>
-            <CartProvider>
-              <RootNavigator />
-              <StatusBar style="auto" />
-            </CartProvider>
+            <NotificationProvider>
+              <FavoritesProvider>
+                <CartProvider>
+                  <RootNavigator />
+                  <StatusBar style="auto" />
+                </CartProvider>
+              </FavoritesProvider>
+            </NotificationProvider>
           </AuthProvider>
         </StripeProvider>
       </SafeAreaProvider>

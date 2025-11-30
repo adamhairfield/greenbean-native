@@ -5,16 +5,31 @@ import CartScreen from '../screens/shop/CartScreen';
 import CheckoutScreen from '../screens/shop/CheckoutScreen';
 import OrderConfirmationScreen from '../screens/shop/OrderConfirmationScreen';
 import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
+import { NotificationButton, CustomBackButton } from '../components';
+import { useNavigation } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator<CartStackParamList>();
 
 const CartNavigator = () => {
+  const navigation = useNavigation<any>();
+  
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
+      }}
+    >
       <Stack.Screen 
         name="CartMain" 
         component={CartScreen}
-        options={{ title: 'Shopping Cart' }}
+        options={{
+          title: 'Shopping Cart',
+          headerRight: () => (
+            <NotificationButton 
+              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+            />
+          ),
+        }}
       />
       <Stack.Screen 
         name="Checkout" 

@@ -46,11 +46,26 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   const [specialInstructions, setSpecialInstructions] = useState('');
   
   // Pricing
-  const ORDER_MINIMUM = 30.0;
+  const ORDER_MINIMUM = 40.0;
   const subtotal = cartSubtotal;
-  const deliveryFee = 5.0;
+  
+  // Tiered delivery fees based on subtotal
+  const getDeliveryFee = (subtotal: number): number => {
+    if (subtotal >= 80) return 0;      // $80+: FREE
+    if (subtotal >= 60) return 4;      // $60-$79.99: $4
+    if (subtotal >= 40) return 6;      // $40-$59.99: $6
+    return 6;                          // Below minimum: $6
+  };
+  
+  const deliveryFee = getDeliveryFee(subtotal);
   const tax = subtotal * 0.08;
-  const total = subtotal + deliveryFee + tax;
+  
+  // Stripe fees: 2.9% + $0.30 per transaction
+  const STRIPE_PERCENTAGE = 0.029;
+  const STRIPE_FIXED_FEE = 0.30;
+  const stripeFee = (subtotal + deliveryFee + tax) * STRIPE_PERCENTAGE + STRIPE_FIXED_FEE;
+  
+  const total = subtotal + deliveryFee + tax + stripeFee;
   const meetsMinimum = subtotal >= ORDER_MINIMUM;
 
   useEffect(() => {
@@ -116,31 +131,33 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
     setSubmitting(true);
 
     try {
-      // Generate order number
-      const orderNumber = `ORD-${Date.now()}`;
+      // Validate inventory before proceeding
+      for (const item of items) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('stock_quantity, name')
+          .eq('id', item.product_id)
+          .single();
+
+        if (productError) {
+          throw new Error('Failed to verify product availability');
+        }
+
+        if (product.stock_quantity < item.quantity) {
+          Alert.alert(
+            'Insufficient Stock',
+            `Sorry, "${product.name}" only has ${product.stock_quantity} available. Please update your cart.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      }
 
       // Get the selected schedule's delivery date
       const selectedSchedule = deliverySchedules.find(s => s.schedule_id === selectedScheduleId);
-      
-      console.log('Preparing order data');
-      console.log('Delivery date:', selectedSchedule?.next_delivery_date);
-      console.log('Payment amount:', total);
-
-      // Prepare order data (don't insert yet)
-      const orderData = {
-        customer_id: user!.id,
-        order_number: orderNumber,
-        delivery_address_id: selectedAddressId,
-        delivery_schedule_id: selectedScheduleId,
-        delivery_date: selectedSchedule?.next_delivery_date,
-        subtotal,
-        delivery_fee: deliveryFee,
-        tax,
-        total,
-        special_instructions: specialInstructions || null,
-        status: 'pending',
-        payment_status: 'paid', // Will be paid after Stripe succeeds
-      };
+      if (!selectedSchedule) {
+        throw new Error('Selected delivery schedule not found');
+      }
 
       // Prepare order items data
       const orderItemsData = items.map(item => ({
@@ -158,13 +175,13 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
       
       // For now, we'll create a payment intent without an order ID
       // The payment intent will be created, and we'll create the order after payment succeeds
-      const { clientSecret } = await createPaymentIntent({
+      const { clientSecret, paymentIntentId } = await createPaymentIntent({
         orderId: tempOrderId, // Temporary ID
         amount: total,
         currency: 'usd',
       });
 
-      console.log('Payment intent created successfully');
+      console.log('Payment intent created successfully:', paymentIntentId);
 
       // Initialize payment sheet
       const { error: initError } = await initPaymentSheet({
@@ -194,6 +211,23 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
 
       // Payment successful! Now create the order
       console.log('Payment successful, creating order in database');
+      
+      // Prepare order data with payment intent ID
+      const orderData = {
+        customer_id: user!.id,
+        delivery_address_id: selectedAddressId,
+        delivery_schedule_id: selectedScheduleId,
+        delivery_date: selectedSchedule?.next_delivery_date,
+        subtotal,
+        delivery_fee: deliveryFee,
+        tax,
+        total,
+        special_instructions: specialInstructions || null,
+        status: 'pending',
+        payment_status: 'paid',
+        stripe_payment_intent_id: paymentIntentId,
+        stripe_fee: stripeFee,
+      };
       
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -232,7 +266,7 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
       // Show success and navigate
       Alert.alert(
         'Order Placed!',
-        `Your order #${orderNumber} has been placed and paid successfully. We'll notify you when it's on the way!`,
+        `Your order #${order.order_number} has been placed and paid successfully. We'll notify you when it's on the way!`,
         [
           {
             text: 'OK',
@@ -411,6 +445,10 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tax (8%)</Text>
               <Text style={styles.summaryValue}>${tax.toFixed(2)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Processing Fee</Text>
+              <Text style={styles.summaryValue}>${stripeFee.toFixed(2)}</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryRow}>

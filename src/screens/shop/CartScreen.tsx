@@ -92,7 +92,16 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
   }
 
   const subtotal = cartSubtotal;
-  const deliveryFee = 5.0;
+  
+  // Tiered delivery fees
+  const getDeliveryFee = (subtotal: number): number => {
+    if (subtotal >= 80) return 0;      // $80+: FREE
+    if (subtotal >= 60) return 4;      // $60-$79.99: $4
+    if (subtotal >= 40) return 6;      // $40-$59.99: $6
+    return 6;                          // Below minimum: $6
+  };
+  
+  const deliveryFee = getDeliveryFee(subtotal);
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + deliveryFee + tax;
 
@@ -191,8 +200,19 @@ const CartScreen: React.FC<CartScreenProps> = ({ navigation }) => {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>${deliveryFee.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>
+                {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
+              </Text>
             </View>
+
+            {/* Show incentive if not at free delivery yet */}
+            {subtotal < 80 && subtotal >= 40 && (
+              <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#E8F5E9', borderRadius: 8, marginVertical: 8 }}>
+                <Text style={{ color: '#2E7D32', fontSize: 13, textAlign: 'center' }}>
+                  💚 Add ${(80 - subtotal).toFixed(2)} more for FREE delivery!
+                </Text>
+              </View>
+            )}
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tax (8%)</Text>

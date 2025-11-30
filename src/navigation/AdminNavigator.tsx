@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AdminStackParamList } from './types';
+import { CustomBackButton } from '../components';
 import DashboardScreen from '../screens/admin/DashboardScreen';
 import ProductManagementScreen from '../screens/admin/ProductManagementScreen';
 import AddProductScreen from '../screens/admin/AddProductScreen';
@@ -15,7 +16,11 @@ const Stack = createNativeStackNavigator<AdminStackParamList>();
 
 const AdminNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
+      }}
+    >
       <Stack.Screen 
         name="Dashboard" 
         component={DashboardScreen}

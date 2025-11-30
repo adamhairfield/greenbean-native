@@ -11,11 +11,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { OrdersStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Ionicons } from '@expo/vector-icons';
+import { Truck, ShieldCheck, Store, Receipt, Package, DollarSign, CheckCircle, Clock, ChevronRight } from 'lucide-react-native';
 import { Database } from '../../types/database';
 import { LoadingSpinner } from '../../components';
 
-type Order = Database['public']['Tables']['orders']['Row'];
+type Order = Database['public']['Tables']['orders']['Row'] & {
+  order_items?: { quantity: number }[];
+};
 
 type OrdersListScreenProps = {
   navigation: NativeStackNavigationProp<OrdersStackParamList, 'OrdersList'>;
@@ -29,6 +31,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
 
   const isMasterAdmin = isRole(['master']);
   const isSeller = isRole(['seller']);
+  const isDriver = isRole(['driver']);
 
   useEffect(() => {
     fetchOrders();
@@ -44,11 +47,14 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
 
   const fetchOrders = async () => {
     try {
-      // Master admins see all orders
-      if (isMasterAdmin) {
+      // Master admins and drivers see all orders
+      if (isMasterAdmin || isDriver) {
         const { data, error } = await supabase
           .from('orders')
-          .select('*')
+          .select(`
+            *,
+            order_items(quantity)
+          `)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -109,10 +115,13 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
         const orderIds = [...new Set(orderItemsData.map(item => item.order_id))];
         console.log('Order IDs:', orderIds);
 
-        // Fetch the actual orders
+        // Fetch the actual orders with order_items
         const { data, error } = await supabase
           .from('orders')
-          .select('*')
+          .select(`
+            *,
+            order_items(quantity)
+          `)
           .in('id', orderIds)
           .order('created_at', { ascending: false });
 
@@ -130,7 +139,10 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
       else {
         const { data, error } = await supabase
           .from('orders')
-          .select('*')
+          .select(`
+            *,
+            order_items(quantity)
+          `)
           .eq('customer_id', user?.id)
           .order('created_at', { ascending: false });
 
@@ -182,15 +194,17 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {isMasterAdmin && (
+      {(isMasterAdmin || isDriver) && (
         <View style={styles.adminBanner}>
-          <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
-          <Text style={styles.adminBannerText}>Viewing All Platform Orders</Text>
+          <ShieldCheck size={20} color="#4CAF50" />
+          <Text style={styles.adminBannerText}>
+            {isDriver ? 'Viewing All Orders for Delivery' : 'Viewing All Platform Orders'}
+          </Text>
         </View>
       )}
       {isSeller && !isMasterAdmin && (
         <View style={styles.sellerBanner}>
-          <Ionicons name="storefront" size={20} color="#2196F3" />
+          <Store size={20} color="#2196F3" />
           <Text style={styles.sellerBannerText}>Orders Containing Your Products</Text>
         </View>
       )}
@@ -204,7 +218,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="receipt-outline" size={64} color="#ccc" />
+            <Receipt size={64} color="#ccc" />
             <Text style={styles.emptyTitle}>No Orders</Text>
             <Text style={styles.emptyText}>
               {isMasterAdmin
@@ -224,35 +238,36 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
                 <Text style={styles.orderDate}>{formatDate(item.created_at!)}</Text>
               </View>
               <View style={styles.statusContainer}>
-                <Text style={styles.statusLabel}>Delivery:</Text>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(item.status) },
-                  ]}
-                >
-                  <Text style={styles.statusText}>
-                    {getStatusLabel(item.status)}
-                  </Text>
-                </View>
+                <Truck 
+                  size={20} 
+                  color={getStatusColor(item.status)} 
+                />
+                <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                  {getStatusLabel(item.status)}
+                </Text>
               </View>
             </View>
 
             <View style={styles.orderDetails}>
               <View style={styles.detailRow}>
-                <Ionicons name="cube-outline" size={16} color="#666" />
-                <Text style={styles.detailText}>Items in order</Text>
+                <Package size={16} color="#666" />
+                <Text style={styles.detailText}>
+                  {(() => {
+                    const totalQty = item.order_items?.reduce((sum: number, oi: any) => sum + (oi.quantity || 0), 0) || 0;
+                    return `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+                  })()}
+                </Text>
               </View>
               <View style={styles.detailRow}>
-                <Ionicons name="cash-outline" size={16} color="#666" />
+                <DollarSign size={16} color="#666" />
                 <Text style={styles.detailText}>${item.total.toFixed(2)}</Text>
               </View>
               <View style={styles.detailRow}>
-                <Ionicons
-                  name={item.payment_status === 'paid' ? 'checkmark-circle' : 'time-outline'}
-                  size={16}
-                  color={item.payment_status === 'paid' ? '#4CAF50' : '#FF9800'}
-                />
+                {item.payment_status === 'paid' ? (
+                  <CheckCircle size={16} color="#4CAF50" />
+                ) : (
+                  <Clock size={16} color="#FF9800" />
+                )}
                 <Text style={styles.detailText}>
                   {item.payment_status === 'paid' ? 'Paid' : 'Payment Pending'}
                 </Text>
@@ -261,7 +276,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
 
             <View style={styles.orderFooter}>
               <Text style={styles.viewDetails}>View Details</Text>
-              <Ionicons name="chevron-forward" size={20} color="#4CAF50" />
+              <ChevronRight size={20} color="#4CAF50" />
             </View>
           </TouchableOpacity>
         )}
@@ -310,12 +325,7 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  statusLabel: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    gap: 6,
   },
   listContent: {
     padding: 16,
@@ -367,15 +377,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
   statusText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
   },
   orderDetails: {
     borderTopWidth: 1,

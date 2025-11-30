@@ -14,7 +14,8 @@ import { ShopStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
 import { Database } from '../../types/database';
 import { useCart } from '../../contexts/CartContext';
-import { Ionicons } from '@expo/vector-icons';
+import { useFavorites } from '../../contexts/FavoritesContext';
+import { Heart } from 'lucide-react-native';
 import { Card, LoadingSpinner } from '../../components';
 
 type Category = Database['public']['Tables']['categories']['Row'];
@@ -25,6 +26,7 @@ type HomeScreenProps = {
 };
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,6 +170,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                       <Text style={styles.productEmoji}>🥬</Text>
                     </View>
                   )}
+                  <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(product.id);
+                    }}
+                  >
+                    <Heart
+                      size={20}
+                      color="#4CAF50"
+                      fill={isFavorite(product.id) ? '#4CAF50' : 'transparent'}
+                    />
+                  </TouchableOpacity>
                   <Text style={styles.productName} numberOfLines={2}>
                     {product.name}
                   </Text>
@@ -317,6 +332,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    position: 'relative',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+    zIndex: 1,
   },
   productImage: {
     width: '100%',

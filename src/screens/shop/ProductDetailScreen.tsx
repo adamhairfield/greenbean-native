@@ -77,6 +77,17 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   };
 
   const incrementQuantity = () => {
+    if (!product || product.stock_quantity === null) return;
+    
+    if (quantity >= product.stock_quantity) {
+      Alert.alert(
+        'Maximum Quantity Reached',
+        `Only ${product.stock_quantity} ${product.unit} available in stock.`,
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
     setQuantity((prev) => prev + 1);
   };
 

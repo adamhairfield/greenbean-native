@@ -63,7 +63,7 @@ CREATE TABLE sellers (
     stripe_onboarding_completed BOOLEAN DEFAULT false,
     stripe_charges_enabled BOOLEAN DEFAULT false,
     stripe_payouts_enabled BOOLEAN DEFAULT false,
-    platform_fee_percentage DECIMAL(5, 2) DEFAULT 10.00,
+    platform_fee_percentage DECIMAL(5, 2) DEFAULT 18.00,
     delivery_fee_percentage DECIMAL(5, 2) DEFAULT 100.00,
     is_verified BOOLEAN DEFAULT false,
     verification_notes TEXT,
@@ -119,9 +119,12 @@ CREATE TABLE orders (
     tax DECIMAL(10, 2) DEFAULT 0.00,
     total DECIMAL(10, 2) NOT NULL,
     payment_status payment_status DEFAULT 'pending' NOT NULL,
+    stripe_payment_intent_id TEXT,
+    stripe_fee DECIMAL(10, 2),
     special_instructions TEXT,
     estimated_delivery_time TIMESTAMP WITH TIME ZONE,
     actual_delivery_time TIMESTAMP WITH TIME ZONE,
+    delivery_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -498,3 +501,39 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_delivery_schedule_order_count
     AFTER INSERT OR UPDATE OR DELETE ON orders
     FOR EACH ROW EXECUTE FUNCTION update_delivery_schedule_count();
+
+-- Function to update product inventory when order items are created
+CREATE OR REPLACE FUNCTION update_product_inventory()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        -- Decrease inventory when order item is created
+        UPDATE products
+        SET stock_quantity = stock_quantity - NEW.quantity
+        WHERE id = NEW.product_id;
+        
+        -- Check if inventory went negative (shouldn't happen with proper validation)
+        IF (SELECT stock_quantity FROM products WHERE id = NEW.product_id) < 0 THEN
+            RAISE EXCEPTION 'Insufficient inventory for product %', NEW.product_id;
+        END IF;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        -- Restore inventory when order item is deleted (e.g., order cancelled)
+        UPDATE products
+        SET stock_quantity = stock_quantity + OLD.quantity
+        WHERE id = OLD.product_id;
+        RETURN OLD;
+    ELSIF TG_OP = 'UPDATE' THEN
+        -- Adjust inventory when quantity changes
+        UPDATE products
+        SET stock_quantity = stock_quantity + OLD.quantity - NEW.quantity
+        WHERE id = NEW.product_id;
+        RETURN NEW;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_product_inventory_on_order
+    AFTER INSERT OR UPDATE OR DELETE ON order_items
+    FOR EACH ROW EXECUTE FUNCTION update_product_inventory();

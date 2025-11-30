@@ -61,11 +61,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error('Must be logged in to add to cart');
 
     try {
+      // Get current product stock
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('stock_quantity')
+        .eq('id', productId)
+        .single();
+
+      if (productError) throw productError;
+
       // Check if item already exists
       const existingItem = items.find(item => item.product_id === productId);
+      const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+
+      // Validate against stock
+      if (product.stock_quantity !== null && newQuantity > product.stock_quantity) {
+        throw new Error(`Only ${product.stock_quantity} available in stock`);
+      }
 
       if (existingItem) {
-        await updateQuantity(productId, existingItem.quantity + quantity);
+        await updateQuantity(productId, newQuantity);
       } else {
         const { error } = await supabase
           .from('cart_items')

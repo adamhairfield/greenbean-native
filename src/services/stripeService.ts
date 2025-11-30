@@ -183,7 +183,7 @@ export const refreshOnboardingLink = async (
  */
 export const calculatePlatformFees = (
   subtotal: number,
-  platformFeePercentage: number = 10
+  platformFeePercentage: number = 18
 ): { platformFee: number; sellerAmount: number } => {
   const platformFee = subtotal * (platformFeePercentage / 100);
   const sellerAmount = subtotal - platformFee;
@@ -211,4 +211,29 @@ export const calculateOrderTotal = (
     tax: Math.round(tax * 100) / 100,
     total: Math.round(total * 100) / 100,
   };
+};
+
+/**
+ * Process a refund for an order
+ */
+export const processRefund = async (params: {
+  orderId: string;
+  amount: number;
+  reason?: string;
+}): Promise<{ success: boolean; refundId: string; isFullRefund: boolean }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('process-refund', {
+      body: {
+        order_id: params.orderId,
+        amount: params.amount,
+        reason: params.reason || 'Refund requested',
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error processing refund:', error);
+    throw new Error('Failed to process refund');
+  }
 };

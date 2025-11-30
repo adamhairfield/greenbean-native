@@ -10,7 +10,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { DriverStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
-import { Ionicons } from '@expo/vector-icons';
+import { Map, Package, Calendar, DollarSign, ChevronRight } from 'lucide-react-native';
 import { LoadingSpinner } from '../../components';
 import { Database } from '../../types/database';
 
@@ -94,7 +94,7 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
           style={styles.mapButton}
           onPress={() => navigation.navigate('DeliveryMap')}
         >
-          <Ionicons name="map" size={20} color="#fff" />
+          <Map size={20} color="#fff" />
           <Text style={styles.mapButtonText}>View Route Map</Text>
         </TouchableOpacity>
       )}
@@ -108,7 +108,7 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="cube-outline" size={64} color="#ccc" />
+            <Package size={64} color="#ccc" />
             <Text style={styles.emptyTitle}>No Deliveries</Text>
             <Text style={styles.emptyText}>
               Orders ready for delivery will appear here
@@ -137,20 +137,20 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
 
             <View style={styles.orderDetails}>
               <View style={styles.detailRow}>
-                <Ionicons name="calendar-outline" size={16} color="#666" />
+                <Calendar size={16} color="#666" />
                 <Text style={styles.detailText}>
                   Delivery: {item.delivery_date ? formatDate(item.delivery_date) : 'TBD'}
                 </Text>
               </View>
               <View style={styles.detailRow}>
-                <Ionicons name="cash-outline" size={16} color="#666" />
+                <DollarSign size={16} color="#666" />
                 <Text style={styles.detailText}>${item.total.toFixed(2)}</Text>
               </View>
             </View>
 
             <View style={styles.viewDetails}>
               <Text style={styles.viewDetailsText}>View Details</Text>
-              <Ionicons name="chevron-forward" size={20} color="#4CAF50" />
+              <ChevronRight size={20} color="#4CAF50" />
             </View>
           </TouchableOpacity>
         )}

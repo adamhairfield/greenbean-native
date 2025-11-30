@@ -47,9 +47,12 @@ export type AccountStackParamList = {
   AddAddress: undefined;
   EditAddress: { addressId: string };
   Favorites: undefined;
+  Notifications: undefined;
+  NotificationSettings: undefined;
   Settings: undefined;
   BecomeSeller: undefined;
   SellerOnboardingStatus: undefined;
+  OrderDetail: { orderId: string };
 };
 
 export type SellerStackParamList = {

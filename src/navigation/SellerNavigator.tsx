@@ -5,16 +5,31 @@ import SellerDashboardScreen from '../screens/seller/SellerDashboardScreen';
 import SellerProductsScreen from '../screens/seller/SellerProductsScreen';
 import AddSellerProductScreen from '../screens/seller/AddSellerProductScreen';
 import EditSellerProductScreen from '../screens/seller/EditSellerProductScreen';
+import { NotificationButton, CustomBackButton } from '../components';
+import { useNavigation } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator<SellerStackParamList>();
 
 const SellerNavigator = () => {
+  const navigation = useNavigation<any>();
+  
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
+      }}
+    >
       <Stack.Screen 
         name="SellerDashboard" 
         component={SellerDashboardScreen}
-        options={{ title: 'Seller Dashboard' }}
+        options={{
+          title: 'Seller Dashboard',
+          headerRight: () => (
+            <NotificationButton 
+              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+            />
+          ),
+        }}
       />
       <Stack.Screen 
         name="SellerProducts" 

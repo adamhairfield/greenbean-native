@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AccountStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import { UserCircle2, Mail, Phone, ShieldCheck, MapPin, Heart, Bell, Settings, Store, ChevronRight, LogOut } from 'lucide-react-native';
 
 type ProfileScreenProps = {
   navigation: NativeStackNavigationProp<AccountStackParamList, 'Profile'>;
@@ -40,7 +40,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
-          <Ionicons name="person-circle" size={100} color="#4CAF50" />
+          <UserCircle2 size={100} color="#4CAF50" />
         </View>
         <Text style={styles.name}>{profile?.full_name || 'User'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
@@ -53,7 +53,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Account Information</Text>
         
         <View style={styles.infoRow}>
-          <Ionicons name="mail-outline" size={20} color="#666" />
+          <Mail size={20} color="#666" />
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Email</Text>
             <Text style={styles.infoValue}>{user?.email}</Text>
@@ -62,7 +62,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         {profile?.phone && (
           <View style={styles.infoRow}>
-            <Ionicons name="call-outline" size={20} color="#666" />
+            <Phone size={20} color="#666" />
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Phone</Text>
               <Text style={styles.infoValue}>{profile.phone}</Text>
@@ -71,7 +71,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         )}
 
         <View style={styles.infoRow}>
-          <Ionicons name="shield-checkmark-outline" size={20} color="#666" />
+          <ShieldCheck size={20} color="#666" />
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Role</Text>
             <Text style={styles.infoValue}>{profile?.role}</Text>
@@ -83,53 +83,70 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Settings</Text>
         
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Addresses')}
-        >
-          <Ionicons name="location-outline" size={24} color="#4CAF50" />
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemTitle}>Delivery Addresses</Text>
-            <Text style={styles.menuItemSubtitle}>Manage your delivery locations</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="#999" />
-        </TouchableOpacity>
+        {/* Only show Delivery Addresses and Favorites for customer accounts */}
+        {!isRole(['master', 'admin', 'driver', 'seller']) && (
+          <>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('Addresses')}
+            >
+              <MapPin size={24} color="#4CAF50" />
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuItemTitle}>Delivery Addresses</Text>
+                <Text style={styles.menuItemSubtitle}>Manage your delivery locations</Text>
+              </View>
+              <ChevronRight size={24} color="#999" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('Favorites')}
+            >
+              <Heart size={24} color="#4CAF50" />
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuItemTitle}>Favorites</Text>
+                <Text style={styles.menuItemSubtitle}>Your saved products</Text>
+              </View>
+              <ChevronRight size={24} color="#999" />
+            </TouchableOpacity>
+          </>
+        )}
 
         <TouchableOpacity 
           style={styles.menuItem}
-          onPress={() => navigation.navigate('Favorites')}
+          onPress={() => navigation.navigate('NotificationSettings')}
         >
-          <Ionicons name="heart-outline" size={24} color="#4CAF50" />
+          <Bell size={24} color="#4CAF50" />
           <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemTitle}>Favorites</Text>
-            <Text style={styles.menuItemSubtitle}>Your saved products</Text>
+            <Text style={styles.menuItemTitle}>Notification Settings</Text>
+            <Text style={styles.menuItemSubtitle}>Manage your notification preferences</Text>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#999" />
+          <ChevronRight size={24} color="#999" />
         </TouchableOpacity>
       </View>
 
-      {/* Become a Seller Button - Only show for non-sellers */}
-      {!isRole(['seller', 'admin', 'master']) && (
+      {/* Become a Seller Button - Only show for customer accounts */}
+      {!isRole(['master', 'admin', 'driver', 'seller']) && (
         <View style={styles.section}>
           <TouchableOpacity 
             style={styles.becomeSellerButton} 
             onPress={() => navigation.navigate('BecomeSeller')}
           >
-            <Ionicons name="storefront-outline" size={24} color="#4CAF50" />
+            <Store size={24} color="#4CAF50" />
             <View style={styles.becomeSellerContent}>
               <Text style={styles.becomeSellerTitle}>Become a Seller</Text>
               <Text style={styles.becomeSellerSubtitle}>
                 Start selling your farm-fresh products
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#999" />
+            <ChevronRight size={24} color="#999" />
           </TouchableOpacity>
         </View>
       )}
 
       <View style={styles.section}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#fff" />
+          <LogOut size={24} color="#fff" />
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
       </View>

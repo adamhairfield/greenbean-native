@@ -8,15 +8,18 @@ import {
   RefreshControl,
   Alert,
   TouchableOpacity,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { OrdersStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
-import { Ionicons } from '@expo/vector-icons';
+import { Truck, Calendar, Store, MapPin, Phone, Package, Image as ImageIcon, Receipt, CheckCircle, Clock } from 'lucide-react-native';
 import { LoadingSpinner } from '../../components';
 import { Database } from '../../types/database';
 import { useAuth } from '../../contexts/AuthContext';
+import { processRefund } from '../../services/stripeService';
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
   delivery_address?: {
@@ -57,6 +60,9 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundQuantities, setRefundQuantities] = useState<Map<string, number>>(new Map());
+  const [refundNote, setRefundNote] = useState('');
 
   const isSeller = isRole(['seller']);
   const isDriver = isRole(['driver']);
@@ -208,6 +214,143 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
     return nextStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const handleRefund = () => {
+    if (!order) return;
+    
+    if (order.payment_status !== 'paid') {
+      Alert.alert('Cannot Refund', 'This order has not been paid yet.');
+      return;
+    }
+    
+    // Reset selections and show modal
+    setRefundQuantities(new Map());
+    setShowRefundModal(true);
+  };
+
+  const updateRefundQuantity = (itemId: string, change: number) => {
+    setRefundQuantities(prev => {
+      const newMap = new Map(prev);
+      const item = orderItems.find(i => i.id === itemId);
+      if (!item) return prev;
+      
+      const currentQty = newMap.get(itemId) || 0;
+      const newQty = Math.max(0, Math.min(item.quantity, currentQty + change));
+      
+      if (newQty === 0) {
+        newMap.delete(itemId);
+      } else {
+        newMap.set(itemId, newQty);
+      }
+      
+      return newMap;
+    });
+  };
+
+  const calculateRefundAmount = () => {
+    if (!order) return 0;
+    
+    // Calculate subtotal of selected items with their quantities
+    let itemsSubtotal = 0;
+    let totalRefundedQty = 0;
+    let totalOrderQty = 0;
+    
+    orderItems.forEach(item => {
+      totalOrderQty += item.quantity;
+      const refundQty = refundQuantities.get(item.id) || 0;
+      if (refundQty > 0) {
+        totalRefundedQty += refundQty;
+        itemsSubtotal += item.unit_price * refundQty;
+      }
+    });
+    
+    // If all items at full quantity are selected, refund everything including fees
+    if (totalRefundedQty === totalOrderQty) {
+      return order.total;
+    }
+    
+    // For partial refunds, calculate proportional fees
+    const itemsRatio = itemsSubtotal / order.subtotal;
+    const proportionalDeliveryFee = (order.delivery_fee || 0) * itemsRatio;
+    const proportionalTax = (order.tax || 0) * itemsRatio;
+    const proportionalStripeFee = ((order as any).stripe_fee || 0) * itemsRatio;
+    
+    return itemsSubtotal + proportionalDeliveryFee + proportionalTax + proportionalStripeFee;
+  };
+
+  const confirmRefund = async () => {
+    if (!order) return;
+    
+    // Prevent duplicate submissions
+    if (updating) {
+      return;
+    }
+    
+    if (refundQuantities.size === 0) {
+      Alert.alert('No Items Selected', 'Please select at least one item to refund.');
+      return;
+    }
+    
+    if (!refundNote.trim()) {
+      Alert.alert('Note Required', 'Please provide a reason for the refund.');
+      return;
+    }
+    
+    const amount = calculateRefundAmount();
+    const selectedItems = orderItems.filter(item => refundQuantities.has(item.id));
+    const itemsList = selectedItems.map(item => {
+      const qty = refundQuantities.get(item.id) || 0;
+      return `${item.product.name} (${qty} of ${item.quantity})`;
+    }).join(', ');
+    
+    let totalRefundedQty = 0;
+    let totalOrderQty = 0;
+    orderItems.forEach(item => {
+      totalOrderQty += item.quantity;
+      totalRefundedQty += refundQuantities.get(item.id) || 0;
+    });
+    const isFullRefund = totalRefundedQty === totalOrderQty;
+    
+    Alert.alert(
+      'Confirm Refund',
+      `Refund $${amount.toFixed(2)} for: ${itemsList}?${!isFullRefund ? ' (Partial Refund)' : ''}`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          style: 'destructive',
+          onPress: async () => {
+            // Double-check we're not already processing
+            if (updating) return;
+            
+            setUpdating(true);
+            try {
+              // Process refund through Stripe
+              const result = await processRefund({
+                orderId: order.id,
+                amount: amount,
+                reason: `${refundNote}\n\nRefunded items: ${itemsList}`,
+              });
+
+              setShowRefundModal(false);
+              setRefundQuantities(new Map());
+              setRefundNote('');
+              await fetchOrderDetails();
+              Alert.alert(
+                'Refund Processed', 
+                `$${amount.toFixed(2)} has been ${result.isFullRefund ? 'fully' : 'partially'} refunded to the customer via Stripe.`
+              );
+            } catch (error: any) {
+              console.error('Error processing refund:', error);
+              Alert.alert('Error', error.message || 'Failed to process refund. Please try again.');
+            } finally {
+              setUpdating(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return <LoadingSpinner message="Loading order details..." />;
   }
@@ -231,13 +374,14 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Header */}
       <View style={styles.header}>
         <Text style={styles.orderNumber}>Order #{order.order_number}</Text>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(order.status) },
-          ]}
-        >
-          <Text style={styles.statusText}>{getStatusLabel(order.status)}</Text>
+        <View style={styles.statusContainer}>
+          <Truck 
+            size={20} 
+            color={getStatusColor(order.status)} 
+          />
+          <Text style={[styles.statusText, { color: getStatusColor(order.status) }]}>
+            {getStatusLabel(order.status)}
+          </Text>
         </View>
       </View>
 
@@ -245,7 +389,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {order.delivery_date && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="calendar-outline" size={20} color="#4CAF50" />
+            <Calendar size={20} color="#4CAF50" />
             <Text style={styles.sectionTitle}>Delivery Information</Text>
           </View>
           <View style={styles.infoCard}>
@@ -267,7 +411,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && orderItems.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="storefront-outline" size={20} color="#4CAF50" />
+            <Store size={20} color="#4CAF50" />
             <Text style={styles.sectionTitle}>Pickup Locations</Text>
           </View>
           {Array.from(new Set(orderItems.map(item => item.product.seller?.business_name).filter(Boolean))).map((businessName) => {
@@ -280,18 +424,18 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
                 <Text style={styles.sellerName}>{seller.business_name}</Text>
                 {seller.business_address && (
                   <View style={styles.pickupRow}>
-                    <Ionicons name="location" size={16} color="#666" />
+                    <MapPin size={16} color="#666" />
                     <Text style={styles.pickupText}>{seller.business_address}</Text>
                   </View>
                 )}
                 {seller.business_phone && (
                   <View style={styles.pickupRow}>
-                    <Ionicons name="call" size={16} color="#666" />
+                    <Phone size={16} color="#666" />
                     <Text style={styles.pickupText}>{seller.business_phone}</Text>
                   </View>
                 )}
                 <View style={styles.pickupRow}>
-                  <Ionicons name="cube" size={16} color="#666" />
+                  <Package size={16} color="#666" />
                   <Text style={styles.pickupText}>
                     {sellerItems.length} item{sellerItems.length > 1 ? 's' : ''} to pick up
                   </Text>
@@ -306,7 +450,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && order.delivery_address && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="location-outline" size={20} color="#4CAF50" />
+            <MapPin size={20} color="#4CAF50" />
             <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
           <View style={styles.infoCard}>
@@ -335,7 +479,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Items */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="cube-outline" size={20} color="#4CAF50" />
+          <Package size={20} color="#4CAF50" />
           <Text style={styles.sectionTitle}>Items ({orderItems.length})</Text>
         </View>
         {orderItems.map((item) => (
@@ -347,7 +491,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
               />
             ) : (
               <View style={[styles.itemImage, styles.placeholderImage]}>
-                <Ionicons name="image-outline" size={30} color="#999" />
+                <ImageIcon size={30} color="#999" />
               </View>
             )}
             <View style={styles.itemInfo}>
@@ -364,7 +508,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Summary */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="receipt-outline" size={20} color="#4CAF50" />
+          <Receipt size={20} color="#4CAF50" />
           <Text style={styles.sectionTitle}>Order Summary</Text>
         </View>
         <View style={styles.summaryCard}>
@@ -391,11 +535,11 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Payment Status */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons
-            name={order.payment_status === 'paid' ? 'checkmark-circle' : 'time-outline'}
-            size={20}
-            color={order.payment_status === 'paid' ? '#4CAF50' : '#FF9800'}
-          />
+          {order.payment_status === 'paid' ? (
+            <CheckCircle size={20} color="#4CAF50" />
+          ) : (
+            <Clock size={20} color="#FF9800" />
+          )}
           <Text style={styles.sectionTitle}>Payment Status</Text>
         </View>
         <View style={styles.infoCard}>
@@ -415,6 +559,19 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
         <View style={{ height: 40 }} />
       </ScrollView>
 
+      {/* Seller Refund Button */}
+      {(isSeller || isAdmin) && order.status !== 'cancelled' && order.payment_status === 'paid' && (
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.refundButton]}
+            onPress={handleRefund}
+            disabled={updating}
+          >
+            <Text style={styles.actionButtonText}>Process Refund</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Update Status Button (for sellers and drivers) - Fixed at bottom */}
       {canUpdateStatus() && getNextStatus() && (
         <View style={styles.fixedButtonContainer}>
@@ -423,13 +580,113 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
             onPress={() => updateOrderStatus(getNextStatus()!)}
             disabled={updating}
           >
-            <Ionicons name="checkmark-circle" size={20} color="#fff" />
+            <CheckCircle size={20} color="#fff" />
             <Text style={styles.updateButtonText}>
               {updating ? 'Updating...' : `Mark as ${getNextStatusLabel()}`}
             </Text>
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Refund Modal */}
+      <Modal
+        visible={showRefundModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowRefundModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <ScrollView style={styles.modalScrollView} contentContainerStyle={styles.modalScrollContent}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Items to Refund</Text>
+              <Text style={styles.modalSubtitle}>
+                Choose which items to refund. Fees will be calculated proportionally.
+              </Text>
+              
+              {/* Items List with Quantity Controls */}
+              <View style={styles.refundItemsList}>
+                {orderItems.map((item) => {
+                  const refundQty = refundQuantities.get(item.id) || 0;
+                  return (
+                    <View key={item.id} style={styles.refundItemCard}>
+                      <View style={styles.refundItemInfo}>
+                        <Text style={styles.refundItemName}>{item.product.name}</Text>
+                        <Text style={styles.refundItemDetails}>
+                          ${item.unit_price.toFixed(2)} each · {item.quantity} in order
+                        </Text>
+                      </View>
+                      <View style={styles.quantityControls}>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => updateRefundQuantity(item.id, -1)}
+                          disabled={refundQty === 0}
+                        >
+                          <Text style={[styles.quantityButtonText, refundQty === 0 && styles.quantityButtonDisabled]}>−</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.quantityText}>{refundQty}</Text>
+                        <TouchableOpacity
+                          style={styles.quantityButton}
+                          onPress={() => updateRefundQuantity(item.id, 1)}
+                          disabled={refundQty >= item.quantity}
+                        >
+                          <Text style={[styles.quantityButtonText, refundQty >= item.quantity && styles.quantityButtonDisabled]}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* Refund Summary */}
+              {refundQuantities.size > 0 && (
+                <View style={styles.refundSummary}>
+                  <Text style={styles.refundSummaryTitle}>Refund Amount</Text>
+                  <Text style={styles.refundSummaryAmount}>
+                    ${calculateRefundAmount().toFixed(2)}
+                  </Text>
+                  <Text style={styles.refundSummaryNote}>
+                    Includes proportional fees
+                  </Text>
+                </View>
+              )}
+
+              {/* Refund Reason */}
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Reason for refund (shown to customer)"
+                value={refundNote}
+                onChangeText={setRefundNote}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+
+              {/* Buttons */}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonCancel]}
+                  onPress={() => {
+                    setShowRefundModal(false);
+                    setRefundQuantities(new Map());
+                    setRefundNote('');
+                  }}
+                >
+                  <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonConfirm]}
+                  onPress={confirmRefund}
+                  disabled={updating || refundQuantities.size === 0}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {updating ? 'Processing...' : 'Process Refund'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -471,16 +728,14 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 12,
   },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
   },
   section: {
     marginTop: 16,
@@ -637,6 +892,200 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 8,
     flex: 1,
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  refundButton: {
+    backgroundColor: '#4CAF50',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  modalScrollContent: {
+    padding: 20,
+    justifyContent: 'center',
+    minHeight: '100%',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+    minHeight: 100,
+  },
+  modalInputSmall: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: '#f5f5f5',
+  },
+  modalButtonConfirm: {
+    backgroundColor: '#f44336',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonTextCancel: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  refundItemsList: {
+    marginVertical: 16,
+  },
+  refundItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  refundItemCheckbox: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uncheckedCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#ddd',
+  },
+  refundItemInfo: {
+    flex: 1,
+  },
+  refundItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  refundItemDetails: {
+    fontSize: 14,
+    color: '#666',
+  },
+  refundItemPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  refundSummary: {
+    backgroundColor: '#E8F5E9',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  refundSummaryTitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  refundSummaryAmount: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  refundSummaryNote: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  quantityButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  quantityButtonDisabled: {
+    opacity: 0.3,
+  },
+  quantityText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    minWidth: 30,
+    textAlign: 'center',
   },
 });
 

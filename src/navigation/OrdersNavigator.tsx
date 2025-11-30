@@ -3,16 +3,31 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { OrdersStackParamList } from './types';
 import OrdersListScreen from '../screens/orders/OrdersListScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
+import { NotificationButton, CustomBackButton } from '../components';
+import { useNavigation } from '@react-navigation/native';
 
 const Stack = createNativeStackNavigator<OrdersStackParamList>();
 
 const OrdersNavigator = () => {
+  const navigation = useNavigation<any>();
+  
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
+      }}
+    >
       <Stack.Screen 
         name="OrdersList" 
         component={OrdersListScreen}
-        options={{ title: 'My Orders' }}
+        options={{
+          title: 'My Orders',
+          headerRight: () => (
+            <NotificationButton 
+              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+            />
+          ),
+        }}
       />
       <Stack.Screen 
         name="OrderDetail" 

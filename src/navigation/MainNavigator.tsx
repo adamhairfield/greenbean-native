@@ -11,7 +11,7 @@ import AdminNavigator from './AdminNavigator';
 import AnalyticsNavigator from './AnalyticsNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Store, ShoppingCart, Receipt, Truck, Settings, BarChart3, User } from 'lucide-react-native';
 import { View, Text, StyleSheet } from 'react-native';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -41,7 +41,7 @@ const MainNavigator = () => {
             options={{
               tabBarLabel: 'Shop',
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="storefront-outline" size={size} color={color} />
+                <Store size={size} color={color} />
               ),
             }}
           />
@@ -52,7 +52,7 @@ const MainNavigator = () => {
               tabBarLabel: 'Cart',
               tabBarIcon: ({ color, size }) => (
                 <View>
-                  <Ionicons name="cart-outline" size={size} color={color} />
+                  <ShoppingCart size={size} color={color} />
                   {itemCount > 0 && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>{itemCount}</Text>
@@ -71,7 +71,7 @@ const MainNavigator = () => {
         options={{
           tabBarLabel: 'Orders',
           tabBarIcon: ({ color, size}) => (
-            <Ionicons name="receipt-outline" size={size} color={color} />
+            <Receipt size={size} color={color} />
           ),
         }}
       />
@@ -82,7 +82,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Sell',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="storefront-outline" size={size} color={color} />
+              <Store size={size} color={color} />
             ),
           }}
         />
@@ -94,7 +94,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Deliveries',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="car-outline" size={size} color={color} />
+              <Truck size={size} color={color} />
             ),
           }}
         />
@@ -106,7 +106,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Admin',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="settings-outline" size={size} color={color} />
+              <Settings size={size} color={color} />
             ),
           }}
         />
@@ -118,7 +118,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Analytics',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="bar-chart-outline" size={size} color={color} />
+              <BarChart3 size={size} color={color} />
             ),
           }}
         />
@@ -129,7 +129,7 @@ const MainNavigator = () => {
         options={{
           tabBarLabel: 'Account',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <User size={size} color={color} />
           ),
         }}
       />
