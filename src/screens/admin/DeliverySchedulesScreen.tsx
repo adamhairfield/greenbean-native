@@ -195,7 +195,7 @@ const DeliverySchedulesScreen = () => {
                 <Ionicons
                   name={item.is_active ? 'checkmark-circle' : 'close-circle'}
                   size={16}
-                  color={item.is_active ? '#4CAF50' : '#f44336'}
+                  color={item.is_active ? '#7FAC4E' : '#f44336'}
                 />
                 <Text style={styles.detailText}>
                   {item.is_active ? 'Active' : 'Inactive'}
@@ -287,8 +287,8 @@ const DeliverySchedulesScreen = () => {
                 <Switch
                   value={isActive}
                   onValueChange={setIsActive}
-                  trackColor={{ false: '#ccc', true: '#A5D6A7' }}
-                  thumbColor={isActive ? '#4CAF50' : '#f4f3f4'}
+                  trackColor={{ false: '#ccc', true: '#B8D49A' }}
+                  thumbColor={isActive ? '#7FAC4E' : '#f4f3f4'}
                 />
               </View>
             </ScrollView>
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   scheduleWindow: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: '#7FAC4E',
     fontWeight: '500',
   },
   scheduleActions: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -473,8 +473,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
+    borderColor: '#7FAC4E',
   },
   dayButtonText: {
     fontSize: 12,
@@ -508,8 +508,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   windowButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
+    borderColor: '#7FAC4E',
   },
   windowButtonText: {
     fontSize: 14,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   saveButtonText: {
     color: '#fff',

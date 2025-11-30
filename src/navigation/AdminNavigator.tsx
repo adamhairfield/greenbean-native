@@ -10,6 +10,7 @@ import OrderManagementScreen from '../screens/admin/OrderManagementScreen';
 import DriverManagementScreen from '../screens/admin/DriverManagementScreen';
 import ManageSellersScreen from '../screens/admin/ManageSellersScreen';
 import DeliverySchedulesScreen from '../screens/admin/DeliverySchedulesScreen';
+import PromoCodesScreen from '../screens/admin/PromoCodesScreen';
 import AnalyticsScreen from '../screens/admin/AnalyticsScreen';
 
 const Stack = createNativeStackNavigator<AdminStackParamList>();
@@ -60,6 +61,11 @@ const AdminNavigator = () => {
         name="DeliverySchedules" 
         component={DeliverySchedulesScreen}
         options={{ title: 'Delivery Schedules' }}
+      />
+      <Stack.Screen 
+        name="PromoCodes" 
+        component={PromoCodesScreen}
+        options={{ title: 'Promo Codes' }}
       />
       <Stack.Screen 
         name="Analytics" 

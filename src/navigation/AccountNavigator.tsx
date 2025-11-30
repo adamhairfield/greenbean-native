@@ -14,7 +14,7 @@ import BecomeSellerScreen from '../screens/seller/BecomeSellerScreen';
 import SellerOnboardingStatusScreen from '../screens/seller/SellerOnboardingStatusScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import { NotificationButton, CustomBackButton } from '../components';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
 
 const Stack = createNativeStackNavigator<AccountStackParamList>();
@@ -31,7 +31,11 @@ const AccountNavigator = () => {
         component={ProfileScreen}
         options={({ navigation }) => ({
           title: 'My Account',
-          headerRight: () => <NotificationButton onPress={() => navigation.navigate('Notifications')} />,
+          headerRight: () => (
+            <View style={{ marginRight: 0 }}>
+              <NotificationButton onPress={() => navigation.navigate('Notifications')} />
+            </View>
+          ),
         })}
       />
       <Stack.Screen 

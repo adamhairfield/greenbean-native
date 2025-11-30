@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { OrdersStackParamList } from './types';
 import OrdersListScreen from '../screens/orders/OrdersListScreen';
@@ -23,9 +24,11 @@ const OrdersNavigator = () => {
         options={{
           title: 'My Orders',
           headerRight: () => (
-            <NotificationButton 
-              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-            />
+            <View style={{ marginRight: 0 }}>
+              <NotificationButton 
+                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+              />
+            </View>
           ),
         }}
       />

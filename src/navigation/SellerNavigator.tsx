@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SellerStackParamList } from './types';
 import SellerDashboardScreen from '../screens/seller/SellerDashboardScreen';
@@ -25,9 +26,11 @@ const SellerNavigator = () => {
         options={{
           title: 'Seller Dashboard',
           headerRight: () => (
-            <NotificationButton 
-              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-            />
+            <View style={{ marginRight: 0 }}>
+              <NotificationButton 
+                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+              />
+            </View>
           ),
         }}
       />

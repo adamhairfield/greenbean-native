@@ -186,7 +186,7 @@ const AnalyticsScreen = () => {
             <Text style={styles.metricLabelSecondary}>Total Delivery Fees</Text>
           </View>
           <View style={styles.metricCard}>
-            <Ionicons name="cart" size={24} color="#4CAF50" />
+            <Ionicons name="cart" size={24} color="#7FAC4E" />
             <Text style={styles.metricValueSecondary}>${analytics.averageOrderValue.toFixed(2)}</Text>
             <Text style={styles.metricLabelSecondary}>Avg Order Value</Text>
           </View>
@@ -203,7 +203,7 @@ const AnalyticsScreen = () => {
             <Text style={styles.metricLabelSecondary}>Total Orders</Text>
           </View>
           <View style={styles.metricCard}>
-            <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={24} color="#7FAC4E" />
             <Text style={styles.metricValueSecondary}>{analytics.completedOrders}</Text>
             <Text style={styles.metricLabelSecondary}>Completed</Text>
           </View>
@@ -236,7 +236,7 @@ const AnalyticsScreen = () => {
           </View>
         </View>
         <View style={styles.metricCard}>
-          <Ionicons name="cube" size={24} color="#4CAF50" />
+          <Ionicons name="cube" size={24} color="#7FAC4E" />
           <Text style={styles.metricValueSecondary}>{analytics.totalProducts}</Text>
           <Text style={styles.metricLabelSecondary}>Total Products</Text>
         </View>
@@ -283,8 +283,8 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   timeRangeButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
+    borderColor: '#7FAC4E',
   },
   timeRangeText: {
     fontSize: 14,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   primaryCard: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   successCard: {
     backgroundColor: '#2196F3',

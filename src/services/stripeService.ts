@@ -52,19 +52,40 @@ export const createPaymentIntent = async (
   params: CreatePaymentIntentParams
 ): Promise<CreatePaymentIntentResponse> => {
   try {
+    // Get the current session to ensure we have an auth token
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
+
+    console.log('Creating payment intent with auth token');
+
     const { data, error } = await supabase.functions.invoke('create-payment-intent', {
       body: {
         order_id: params.orderId,
         amount: params.amount,
         currency: params.currency || 'usd',
       },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Edge function error:', error);
+      throw error;
+    }
+    
+    if (data?.error) {
+      console.error('Payment intent error:', data.error, data.details);
+      throw new Error(data.error);
+    }
+    
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating payment intent:', error);
-    throw new Error('Failed to create payment intent');
+    throw new Error(error.message || 'Failed to create payment intent');
   }
 };
 

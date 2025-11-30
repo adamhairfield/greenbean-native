@@ -204,7 +204,7 @@ const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
               <ActivityIndicator
                 style={styles.searchingIndicator}
                 size="small"
-                color="#4CAF50"
+                color="#7FAC4E"
               />
             )}
             {showSuggestions && suggestions.length > 0 && (
@@ -219,7 +219,7 @@ const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
                       style={styles.suggestionItem}
                       onPress={() => handleSelectSuggestion(item)}
                     >
-                      <Ionicons name="location-outline" size={20} color="#4CAF50" />
+                      <Ionicons name="location-outline" size={20} color="#7FAC4E" />
                       <Text style={styles.suggestionText}>
                         {item.description}
                       </Text>
@@ -306,8 +306,8 @@ const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
           <Switch
             value={isDefault}
             onValueChange={setIsDefault}
-            trackColor={{ false: '#ccc', true: '#A5D6A7' }}
-            thumbColor={isDefault ? '#4CAF50' : '#f4f3f4'}
+            trackColor={{ false: '#ccc', true: '#B8D49A' }}
+            thumbColor={isDefault ? '#7FAC4E' : '#f4f3f4'}
           />
         </View>
       </ScrollView>
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

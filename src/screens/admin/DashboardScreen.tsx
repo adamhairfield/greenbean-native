@@ -33,6 +33,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       description: 'Manage delivery windows',
     },
     {
+      title: 'Promo Codes',
+      icon: 'pricetag-outline' as const,
+      screen: 'PromoCodes' as const,
+      description: 'Create and manage discount codes',
+    },
+    {
       title: 'Manage Drivers',
       icon: 'car-outline' as const,
       screen: 'DriverManagement' as const,
@@ -55,7 +61,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             onPress={() => navigation.navigate(item.screen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name={item.icon} size={32} color="#4CAF50" />
+              <Ionicons name={item.icon} size={32} color="#7FAC4E" />
             </View>
             <Text style={styles.menuTitle}>{item.title}</Text>
             <Text style={styles.menuDescription}>{item.description}</Text>

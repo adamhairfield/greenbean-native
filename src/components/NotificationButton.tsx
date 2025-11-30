@@ -53,8 +53,9 @@ const NotificationButton: React.FC<NotificationButtonProps> = ({ onPress }) => {
     <TouchableOpacity
       onPress={onPress}
       style={styles.notificationButton}
+      activeOpacity={0.6}
     >
-      <Bell size={24} color="#333" />
+      <Bell size={24} color="#333" strokeWidth={2} />
       {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
@@ -70,6 +71,7 @@ const styles = StyleSheet.create({
   notificationButton: {
     marginRight: 16,
     position: 'relative',
+    padding: 8,
   },
   badge: {
     position: 'absolute',

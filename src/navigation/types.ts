@@ -77,6 +77,7 @@ export type AdminStackParamList = {
   DriverManagement: undefined;
   ManageSellers: undefined;
   DeliverySchedules: undefined;
+  PromoCodes: undefined;
   Analytics: undefined;
 };
 

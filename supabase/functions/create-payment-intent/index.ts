@@ -4,12 +4,8 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@14.5.0?target=deno'
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-})
+const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || ''
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,19 +45,39 @@ serve(async (req) => {
     console.log('Creating payment intent for amount:', amount)
     console.log('Order ID (may be temporary):', order_id)
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency,
-      transfer_group: order_id,
-      metadata: {
-        order_id,
-        user_id: user.id,
+    // Validate amount
+    if (!amount || amount <= 0) {
+      throw new Error('Invalid amount: ' + amount)
+    }
+
+    const amountInCents = Math.round(amount * 100)
+    console.log('Creating payment intent:', { amount, amountInCents, currency, order_id })
+
+    // Create payment intent using Fetch API
+    const stripeResponse = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      body: new URLSearchParams({
+        amount: amountInCents.toString(),
+        currency: currency,
+        'transfer_group': order_id,
+        'metadata[order_id]': order_id,
+        'metadata[user_id]': user.id,
+        'automatic_payment_methods[enabled]': 'true',
+      }),
     })
+
+    if (!stripeResponse.ok) {
+      const errorData = await stripeResponse.text()
+      console.error('Stripe API error:', errorData)
+      throw new Error(`Stripe API error: ${stripeResponse.status} - ${errorData}`)
+    }
+
+    const paymentIntent = await stripeResponse.json()
+    console.log('Payment intent created:', paymentIntent.id)
 
     // Note: Seller transfers will be calculated by webhook after order is created
     // For now, we just create the payment intent
@@ -77,8 +93,13 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error('Edge function error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

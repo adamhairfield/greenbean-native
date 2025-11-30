@@ -333,7 +333,7 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
             <Switch
               value={isOrganic}
               onValueChange={setIsOrganic}
-              trackColor={{ false: '#ccc', true: '#4CAF50' }}
+              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
               thumbColor="#fff"
             />
           </View>
@@ -345,7 +345,7 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
             <Switch
               value={isAvailable}
               onValueChange={setIsAvailable}
-              trackColor={{ false: '#ccc', true: '#4CAF50' }}
+              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
               thumbColor="#fff"
             />
           </View>
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   unitButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   unitButtonText: {
     fontSize: 14,
@@ -451,8 +451,8 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   categoryButtonActive: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
+    borderColor: '#7FAC4E',
   },
   categoryButtonText: {
     fontSize: 14,
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

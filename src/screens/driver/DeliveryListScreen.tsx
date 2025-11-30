@@ -62,7 +62,7 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
   };
 
   const getStatusColor = (status: string) => {
-    return status === 'ready_for_delivery' ? '#4CAF50' : '#00BCD4';
+    return status === 'ready_for_delivery' ? '#7FAC4E' : '#00BCD4';
   };
 
   const getStatusLabel = (status: string) => {
@@ -150,7 +150,7 @@ const DeliveryListScreen: React.FC<DeliveryListScreenProps> = ({ navigation }) =
 
             <View style={styles.viewDetails}>
               <Text style={styles.viewDetailsText}>View Details</Text>
-              <ChevronRight size={20} color="#4CAF50" />
+              <ChevronRight size={20} color="#7FAC4E" />
             </View>
           </TouchableOpacity>
         )}
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     margin: 16,
     marginBottom: 0,
     padding: 16,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   viewDetailsText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4CAF50',
+    color: '#7FAC4E',
     marginRight: 4,
   },
 });

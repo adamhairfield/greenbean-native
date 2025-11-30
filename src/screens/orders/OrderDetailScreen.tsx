@@ -132,9 +132,9 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       pending: '#FF9800',
       confirmed: '#2196F3',
       preparing: '#9C27B0',
-      ready_for_delivery: '#4CAF50',
+      ready_for_delivery: '#7FAC4E',
       out_for_delivery: '#00BCD4',
-      delivered: '#4CAF50',
+      delivered: '#7FAC4E',
       cancelled: '#f44336',
     };
     return colors[status] || '#999';
@@ -389,7 +389,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {order.delivery_date && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Calendar size={20} color="#4CAF50" />
+            <Calendar size={20} color="#7FAC4E" />
             <Text style={styles.sectionTitle}>Delivery Information</Text>
           </View>
           <View style={styles.infoCard}>
@@ -411,7 +411,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && orderItems.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Store size={20} color="#4CAF50" />
+            <Store size={20} color="#7FAC4E" />
             <Text style={styles.sectionTitle}>Pickup Locations</Text>
           </View>
           {Array.from(new Set(orderItems.map(item => item.product.seller?.business_name).filter(Boolean))).map((businessName) => {
@@ -450,7 +450,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && order.delivery_address && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <MapPin size={20} color="#4CAF50" />
+            <MapPin size={20} color="#7FAC4E" />
             <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
           <View style={styles.infoCard}>
@@ -479,7 +479,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Items */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Package size={20} color="#4CAF50" />
+          <Package size={20} color="#7FAC4E" />
           <Text style={styles.sectionTitle}>Items ({orderItems.length})</Text>
         </View>
         {orderItems.map((item) => (
@@ -508,7 +508,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Summary */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Receipt size={20} color="#4CAF50" />
+          <Receipt size={20} color="#7FAC4E" />
           <Text style={styles.sectionTitle}>Order Summary</Text>
         </View>
         <View style={styles.summaryCard}>
@@ -536,7 +536,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           {order.payment_status === 'paid' ? (
-            <CheckCircle size={20} color="#4CAF50" />
+            <CheckCircle size={20} color="#7FAC4E" />
           ) : (
             <Clock size={20} color="#FF9800" />
           )}
@@ -547,7 +547,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
             style={[
               styles.paymentStatus,
               {
-                color: order.payment_status === 'paid' ? '#4CAF50' : '#FF9800',
+                color: order.payment_status === 'paid' ? '#7FAC4E' : '#FF9800',
               },
             ]}
           >
@@ -846,7 +846,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   paymentStatus: {
     fontSize: 18,
@@ -857,7 +857,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     padding: 16,
     borderRadius: 8,
     gap: 8,
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   refundButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   actionButtonText: {
     color: '#fff',
@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
   refundSummaryAmount: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   refundSummaryNote: {
     fontSize: 12,
@@ -1068,7 +1068,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     justifyContent: 'center',
     alignItems: 'center',
   },

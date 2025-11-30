@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   shopButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   unit: {
     fontSize: 12,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   bottomBar: {
     position: 'absolute',
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   checkoutButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

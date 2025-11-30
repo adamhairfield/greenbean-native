@@ -45,6 +45,15 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   // Order details
   const [specialInstructions, setSpecialInstructions] = useState('');
   
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discount: number;
+    promoCodeId: string;
+  } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  
   // Pricing
   const ORDER_MINIMUM = 40.0;
   const subtotal = cartSubtotal;
@@ -58,14 +67,15 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   };
   
   const deliveryFee = getDeliveryFee(subtotal);
-  const tax = subtotal * 0.08;
+  const discount = appliedPromo?.discount || 0;
+  const tax = (subtotal - discount) * 0.08;
   
   // Stripe fees: 2.9% + $0.30 per transaction
   const STRIPE_PERCENTAGE = 0.029;
   const STRIPE_FIXED_FEE = 0.30;
-  const stripeFee = (subtotal + deliveryFee + tax) * STRIPE_PERCENTAGE + STRIPE_FIXED_FEE;
+  const stripeFee = (subtotal - discount + deliveryFee + tax) * STRIPE_PERCENTAGE + STRIPE_FIXED_FEE;
   
-  const total = subtotal + deliveryFee + tax + stripeFee;
+  const total = subtotal - discount + deliveryFee + tax + stripeFee;
   const meetsMinimum = subtotal >= ORDER_MINIMUM;
 
   useEffect(() => {
@@ -107,6 +117,49 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      Alert.alert('Error', 'Please enter a promo code');
+      return;
+    }
+
+    setPromoLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .rpc('validate_promo_code', {
+          p_code: promoCode.trim().toUpperCase(),
+          p_user_id: user!.id,
+          p_order_total: subtotal,
+        });
+
+      if (error) throw error;
+
+      const result = data[0];
+
+      if (result.valid) {
+        setAppliedPromo({
+          code: promoCode.trim().toUpperCase(),
+          discount: result.discount_amount,
+          promoCodeId: result.promo_code_id,
+        });
+        Alert.alert('Success', result.message);
+      } else {
+        Alert.alert('Invalid Code', result.message);
+      }
+    } catch (error: any) {
+      console.error('Error applying promo code:', error);
+      Alert.alert('Error', 'Failed to apply promo code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
   };
 
   const handlePlaceOrder = async () => {
@@ -172,6 +225,19 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
 
       // Create Stripe payment intent FIRST (before creating order)
       console.log('Creating payment intent');
+      console.log('Payment details:', {
+        subtotal,
+        discount,
+        deliveryFee,
+        tax,
+        stripeFee,
+        total,
+      });
+
+      // Validate total amount
+      if (total <= 0) {
+        throw new Error('Invalid order total');
+      }
       
       // For now, we'll create a payment intent without an order ID
       // The payment intent will be created, and we'll create the order after payment succeeds
@@ -220,6 +286,7 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
         delivery_date: selectedSchedule?.next_delivery_date,
         subtotal,
         delivery_fee: deliveryFee,
+        discount,
         tax,
         total,
         special_instructions: specialInstructions || null,
@@ -259,6 +326,21 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
       }
 
       console.log('Order items created successfully');
+
+      // Track promo code usage if applied
+      if (appliedPromo) {
+        await supabase.from('promo_code_usage').insert({
+          promo_code_id: appliedPromo.promoCodeId,
+          user_id: user!.id,
+          order_id: order.id,
+          discount_amount: discount,
+        });
+
+        // Increment usage count
+        await supabase.rpc('increment_promo_usage', {
+          p_promo_code_id: appliedPromo.promoCodeId,
+        });
+      }
 
       // Clear cart
       await clearCart();
@@ -306,7 +388,7 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" color="#7FAC4E" />
         <Text style={styles.loadingText}>Loading checkout...</Text>
       </View>
     );
@@ -362,6 +444,12 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
         {/* Delivery Schedule Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Delivery Schedule</Text>
+          <View style={styles.deliveryNote}>
+            <Ionicons name="information-circle-outline" size={16} color="#666" />
+            <Text style={styles.deliveryNoteText}>
+              Orders must be placed 2 days before delivery. If a day isn't showing, the cutoff has passed.
+            </Text>
+          </View>
           {deliverySchedules.length > 0 ? (
             deliverySchedules.map((schedule) => (
               <TouchableOpacity
@@ -410,6 +498,48 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
           />
         </View>
 
+        {/* Promo Code Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Promo Code</Text>
+          <View style={styles.promoSection}>
+            {appliedPromo ? (
+              <View style={styles.appliedPromoCard}>
+                <View style={styles.appliedPromoInfo}>
+                  <Text style={styles.appliedPromoCode}>{appliedPromo.code}</Text>
+                  <Text style={styles.appliedPromoDiscount}>
+                    -${appliedPromo.discount.toFixed(2)} off
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={handleRemovePromo}>
+                  <Text style={styles.removePromoText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.promoInputContainer}>
+                <TextInput
+                  style={styles.promoInput}
+                  value={promoCode}
+                  onChangeText={setPromoCode}
+                  placeholder="Enter promo code"
+                  placeholderTextColor="#999"
+                  autoCapitalize="characters"
+                />
+                <TouchableOpacity
+                  style={[styles.applyPromoButton, promoLoading && styles.applyPromoButtonDisabled]}
+                  onPress={handleApplyPromo}
+                  disabled={promoLoading}
+                >
+                  {promoLoading ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.applyPromoText}>Apply</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
@@ -436,6 +566,12 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
                 <Text style={[styles.summaryValue, { color: '#FF9800' }]}>
                   ${ORDER_MINIMUM.toFixed(2)}
                 </Text>
+              </View>
+            )}
+            {discount > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: '#7FAC4E' }]}>Discount</Text>
+                <Text style={[styles.summaryValue, { color: '#7FAC4E' }]}>-${discount.toFixed(2)}</Text>
               </View>
             )}
             <View style={styles.summaryRow}>
@@ -530,7 +666,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   addressCardSelected: {
-    borderColor: '#4CAF50',
+    borderColor: '#7FAC4E',
     backgroundColor: '#f1f8f4',
   },
   addressHeader: {
@@ -543,7 +679,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#4CAF50',
+    borderColor: '#7FAC4E',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -552,7 +688,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   addressInfo: {
     flex: 1,
@@ -566,7 +702,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   defaultBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -593,7 +729,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scheduleCardSelected: {
-    borderColor: '#4CAF50',
+    borderColor: '#7FAC4E',
     backgroundColor: '#f1f8f4',
   },
   scheduleInfo: {
@@ -612,7 +748,7 @@ const styles = StyleSheet.create({
   },
   scheduleCapacity: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#7FAC4E',
     fontWeight: '500',
   },
   instructionsInput: {
@@ -658,7 +794,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   emptyText: {
     fontSize: 14,
@@ -712,7 +848,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   placeOrderButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -726,7 +862,82 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 8,
+  },
+  promoSection: {
+    marginBottom: 16,
+  },
+  promoInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  promoInput: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  applyPromoButton: {
+    backgroundColor: '#7FAC4E',
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  applyPromoButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  applyPromoText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  appliedPromoCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#7FAC4E',
+  },
+  appliedPromoInfo: {
+    flex: 1,
+  },
+  appliedPromoCode: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#7FAC4E',
+    marginBottom: 4,
+  },
+  appliedPromoDiscount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  removePromoText: {
+    color: '#f44336',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deliveryNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  deliveryNoteText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
   },
 });
 

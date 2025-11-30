@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CartStackParamList } from './types';
 import CartScreen from '../screens/shop/CartScreen';
@@ -25,9 +26,11 @@ const CartNavigator = () => {
         options={{
           title: 'Shopping Cart',
           headerRight: () => (
-            <NotificationButton 
-              onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-            />
+            <View style={{ marginRight: 0 }}>
+              <NotificationButton 
+                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
+              />
+            </View>
           ),
         }}
       />

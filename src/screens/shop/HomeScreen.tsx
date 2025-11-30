@@ -20,6 +20,13 @@ import { Card, LoadingSpinner } from '../../components';
 
 type Category = Database['public']['Tables']['categories']['Row'];
 type Product = Database['public']['Tables']['products']['Row'];
+type PromoCode = {
+  id: string;
+  code: string;
+  description: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+};
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<ShopStackParamList, 'Home'>;
@@ -29,6 +36,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [activePromo, setActivePromo] = useState<PromoCode | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -46,6 +54,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         .order('display_order');
 
       if (categoriesData) setCategories(categoriesData);
+
+      // Fetch active promo code that should show on banner
+      const { data: promoData } = await supabase
+        .from('promo_codes')
+        .select('id, code, description, discount_type, discount_value')
+        .eq('is_active', true)
+        .eq('show_on_banner', true)
+        .or(`valid_until.is.null,valid_until.gte.${new Date().toISOString()}`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (promoData) {
+        setActivePromo(promoData);
+      }
 
       // Fetch featured products - show all available products for now
       const { data: productsData, error: productsError } = await supabase
@@ -83,13 +106,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome to</Text>
-          <Text style={styles.title}>Greenbean Market 🌱</Text>
-        </View>
-      </View>
-
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -97,12 +113,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         }
       >
         {/* Banner */}
-        <Card style={styles.banner}>
-          <Text style={styles.bannerTitle}>Fresh from Local Farms</Text>
-          <Text style={styles.bannerText}>
-            Delivered twice a week to your door
-          </Text>
-        </Card>
+        {activePromo ? (
+          <Card style={styles.promoBanner}>
+            <View style={styles.promoHeader}>
+              <Text style={styles.promoCode}>{activePromo.code}</Text>
+              <Text style={styles.promoDiscount}>
+                {activePromo.discount_type === 'percentage' 
+                  ? `${activePromo.discount_value}% OFF` 
+                  : `$${activePromo.discount_value} OFF`}
+              </Text>
+            </View>
+            <Text style={styles.promoDescription}>
+              {activePromo.description || 'Use this code at checkout'}
+            </Text>
+          </Card>
+        ) : (
+          <Card style={styles.banner}>
+            <Text style={styles.bannerTitle}>Fresh from Local Farms</Text>
+            <Text style={styles.bannerText}>
+              Delivered twice a week to your door
+            </Text>
+          </Card>
+        )}
 
         {/* Categories */}
         <View style={styles.section}>
@@ -179,8 +211,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   >
                     <Heart
                       size={20}
-                      color="#4CAF50"
-                      fill={isFavorite(product.id) ? '#4CAF50' : 'transparent'}
+                      color="#7FAC4E"
+                      fill={isFavorite(product.id) ? '#7FAC4E' : 'transparent'}
                     />
                   </TouchableOpacity>
                   <Text style={styles.productName} numberOfLines={2}>
@@ -233,28 +265,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  greeting: {
-    fontSize: 14,
-    color: '#666',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
   content: {
     flex: 1,
   },
   banner: {
     margin: 16,
     padding: 24,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7FAC4E',
   },
   bannerTitle: {
     fontSize: 20,
@@ -266,6 +283,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     opacity: 0.9,
+  },
+  promoBanner: {
+    margin: 16,
+    padding: 20,
+    backgroundColor: '#7FAC4E',
+  },
+  promoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  promoCode: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    letterSpacing: 2,
+  },
+  promoDiscount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  promoDescription: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.95,
   },
   section: {
     marginBottom: 24,
@@ -286,7 +334,7 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: '#7FAC4E',
     fontWeight: '600',
   },
   categoryCard: {
@@ -379,7 +427,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#7FAC4E',
   },
   productUnit: {
     fontSize: 12,
