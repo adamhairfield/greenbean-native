@@ -69,9 +69,8 @@ const NotificationButton: React.FC<NotificationButtonProps> = ({ onPress }) => {
 
 const styles = StyleSheet.create({
   notificationButton: {
-    marginRight: 16,
     position: 'relative',
-    padding: 8,
+    padding: 0,
   },
   badge: {
     position: 'absolute',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { ShopStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
 import { Database } from '../../types/database';
@@ -36,6 +37,13 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   useEffect(() => {
     fetchProduct();
   }, [productId]);
+
+  // Refresh product data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchProduct();
+    }, [productId])
+  );
 
   const fetchProduct = async () => {
     try {

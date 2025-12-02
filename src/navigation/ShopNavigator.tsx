@@ -19,6 +19,7 @@ const ShopNavigator = () => {
         headerLeft: (props) => props.canGoBack ? <CustomBackButton /> : undefined,
         headerShadowVisible: false,
         headerTransparent: false,
+        headerBackVisible: false,
       }}
     >
       <Stack.Screen 
@@ -27,12 +28,12 @@ const ShopNavigator = () => {
         options={{
           headerTitle: '',
           headerLeft: () => (
-            <View style={{ marginLeft: 0 }}>
+            <View style={{ marginLeft: 16, backgroundColor: 'transparent' }}>
               <HeaderLogo />
             </View>
           ),
           headerRight: () => (
-            <View style={{ marginRight: 0 }}>
+            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
               <NotificationButton 
                 onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
               />

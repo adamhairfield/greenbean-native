@@ -26,7 +26,7 @@ const CartNavigator = () => {
         options={{
           title: 'Shopping Cart',
           headerRight: () => (
-            <View style={{ marginRight: 0 }}>
+            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
               <NotificationButton 
                 onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
               />

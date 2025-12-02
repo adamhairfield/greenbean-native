@@ -32,7 +32,7 @@ const AccountNavigator = () => {
         options={({ navigation }) => ({
           title: 'My Account',
           headerRight: () => (
-            <View style={{ marginRight: 0 }}>
+            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
               <NotificationButton onPress={() => navigation.navigate('Notifications')} />
             </View>
           ),

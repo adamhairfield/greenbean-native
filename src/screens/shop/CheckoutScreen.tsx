@@ -286,7 +286,6 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
         delivery_date: selectedSchedule?.next_delivery_date,
         subtotal,
         delivery_fee: deliveryFee,
-        discount,
         tax,
         total,
         special_instructions: specialInstructions || null,

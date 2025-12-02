@@ -108,14 +108,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
+      // Optimistically update local state
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item.product_id === productId
+            ? { ...item, quantity }
+            : item
+        )
+      );
+
       const { error } = await supabase
         .from('cart_items')
         .update({ quantity })
         .eq('user_id', user.id)
         .eq('product_id', productId);
 
-      if (error) throw error;
-      await fetchCart();
+      if (error) {
+        // Revert on error
+        await fetchCart();
+        throw error;
+      }
     } catch (error) {
       console.error('Error updating quantity:', error);
       throw error;
