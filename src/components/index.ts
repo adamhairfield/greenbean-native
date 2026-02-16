@@ -5,3 +5,5 @@ export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as NotificationButton } from './NotificationButton';
 export { default as CustomBackButton } from './CustomBackButton';
 export { default as HeaderLogo } from './HeaderLogo';
+export { default as HomeHeader } from './HomeHeader';
+export { default as StandardHeader } from './StandardHeader';

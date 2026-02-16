@@ -1,5 +1,4 @@
 import React from 'react';
-import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { OrdersStackParamList } from './types';
 import OrdersListScreen from '../screens/orders/OrdersListScreen';
@@ -22,20 +21,21 @@ const OrdersNavigator = () => {
         name="OrdersList" 
         component={OrdersListScreen}
         options={{
-          title: 'My Orders',
-          headerRight: () => (
-            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
-              <NotificationButton 
-                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-              />
-            </View>
-          ),
+          header: () => {
+            const HomeHeader = require('../components/HomeHeader').default;
+            return <HomeHeader />;
+          },
         }}
       />
       <Stack.Screen 
         name="OrderDetail" 
         component={OrderDetailScreen}
-        options={{ title: 'Order Details' }}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Order Details" />;
+          },
+        }}
       />
     </Stack.Navigator>
   );

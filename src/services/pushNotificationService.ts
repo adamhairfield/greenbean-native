@@ -93,20 +93,17 @@ async function savePushToken(userId: string, token: string) {
  */
 export async function unregisterPushToken(userId: string) {
   try {
-    const token = (await Notifications.getExpoPushTokenAsync({
-      projectId: 'greenbean-app',
-    })).data;
+    // Simply delete all tokens for this user
+    // We don't need to fetch the current token since we're logging out
+    const { error } = await supabase
+      .from('push_tokens')
+      .delete()
+      .eq('user_id', userId);
 
-    if (token) {
-      const { error } = await supabase
-        .from('push_tokens')
-        .delete()
-        .eq('user_id', userId)
-        .eq('token', token);
-
-      if (error) {
-        console.error('Error removing push token:', error);
-      }
+    if (error) {
+      console.error('Error removing push token:', error);
+    } else {
+      console.log('Push tokens removed successfully');
     }
   } catch (error) {
     console.error('Error in unregisterPushToken:', error);

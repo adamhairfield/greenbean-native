@@ -11,11 +11,12 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { OrdersStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
-import { Truck, Calendar, Store, MapPin, Phone, Package, Image as ImageIcon, Receipt, CheckCircle, Clock } from 'lucide-react-native';
+import { Truck, Calendar, Store, MapPin, Phone, Package, Image as ImageIcon, Receipt, CheckCircle, Clock, Camera } from 'lucide-react-native';
 import { LoadingSpinner } from '../../components';
 import { Database } from '../../types/database';
 import { useAuth } from '../../contexts/AuthContext';
@@ -63,6 +64,8 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundQuantities, setRefundQuantities] = useState<Map<string, number>>(new Map());
   const [refundNote, setRefundNote] = useState('');
+  const [showDeliveryPhotoModal, setShowDeliveryPhotoModal] = useState(false);
+  const [deliveryPhotoUri, setDeliveryPhotoUri] = useState<string | null>(null);
 
   const isSeller = isRole(['seller']);
   const isDriver = isRole(['driver']);
@@ -160,6 +163,12 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
   const updateOrderStatus = async (newStatus: string) => {
     if (!order) return;
 
+    // If marking as delivered, require photo
+    if (newStatus === 'delivered' && isDriver) {
+      setShowDeliveryPhotoModal(true);
+      return;
+    }
+
     Alert.alert(
       'Update Order Status',
       `Mark this order as ${newStatus.replace(/_/g, ' ')}?`,
@@ -190,6 +199,104 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
         },
       ]
     );
+  };
+
+  const takeDeliveryPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Camera permission is required to take delivery photos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setDeliveryPhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const uploadDeliveryPhoto = async (photoUri: string): Promise<string | null> => {
+    try {
+      const fileExt = photoUri.split('.').pop() || 'jpg';
+      const fileName = `${order!.id}_${Date.now()}.${fileExt}`;
+      const filePath = `delivery-photos/${fileName}`;
+
+      // Read file as ArrayBuffer for React Native
+      const response = await fetch(photoUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const fileData = new Uint8Array(arrayBuffer);
+
+      const { error: uploadError } = await supabase.storage
+        .from('order-images')
+        .upload(filePath, fileData, {
+          contentType: `image/${fileExt}`,
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('order-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      return null;
+    }
+  };
+
+  const confirmDelivery = async () => {
+    if (!deliveryPhotoUri) {
+      Alert.alert('Photo Required', 'Please take a photo of the delivered order.');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      // Upload photo
+      const photoUrl = await uploadDeliveryPhoto(deliveryPhotoUri);
+      
+      if (!photoUrl) {
+        throw new Error('Failed to upload photo');
+      }
+
+      // Update order status and add delivery photo
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'delivered',
+          delivery_photo_url: photoUrl,
+          delivered_at: new Date().toISOString(),
+        })
+        .eq('id', order!.id);
+
+      if (error) throw error;
+
+      // Reset and close modal
+      setDeliveryPhotoUri(null);
+      setShowDeliveryPhotoModal(false);
+      
+      // Refresh order details
+      await fetchOrderDetails();
+      Alert.alert('Success', 'Order marked as delivered successfully');
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      Alert.alert('Error', 'Failed to confirm delivery');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const canUpdateStatus = () => {
@@ -687,6 +794,72 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* Delivery Photo Modal */}
+      <Modal
+        visible={showDeliveryPhotoModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setShowDeliveryPhotoModal(false);
+          setDeliveryPhotoUri(null);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Delivery Confirmation</Text>
+            <Text style={styles.modalSubtitle}>
+              Take a photo of the delivered order for customer verification
+            </Text>
+
+            {deliveryPhotoUri ? (
+              <View style={styles.photoPreviewContainer}>
+                <Image source={{ uri: deliveryPhotoUri }} style={styles.photoPreview} />
+                <TouchableOpacity
+                  style={styles.retakePhotoButton}
+                  onPress={takeDeliveryPhoto}
+                >
+                  <Camera size={20} color="#fff" />
+                  <Text style={styles.retakePhotoText}>Retake Photo</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.takePhotoButton}
+                onPress={takeDeliveryPhoto}
+              >
+                <Camera size={48} color="#7FAC4E" />
+                <Text style={styles.takePhotoText}>Take Photo</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => {
+                  setShowDeliveryPhotoModal(false);
+                  setDeliveryPhotoUri(null);
+                }}
+              >
+                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.modalButtonConfirm,
+                  (!deliveryPhotoUri || updating) && styles.modalButtonDisabled,
+                ]}
+                onPress={confirmDelivery}
+                disabled={!deliveryPhotoUri || updating}
+              >
+                <Text style={styles.modalButtonText}>
+                  {updating ? 'Confirming...' : 'Confirm Delivery'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1086,6 +1259,50 @@ const styles = StyleSheet.create({
     color: '#333',
     minWidth: 30,
     textAlign: 'center',
+  },
+  photoPreviewContainer: {
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  photoPreview: {
+    width: '100%',
+    height: 300,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  retakePhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#7FAC4E',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  retakePhotoText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  takePhotoButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9f9f9',
+    padding: 40,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#7FAC4E',
+    borderStyle: 'dashed',
+    marginVertical: 20,
+  },
+  takePhotoText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#7FAC4E',
+  },
+  modalButtonDisabled: {
+    opacity: 0.5,
   },
 });
 

@@ -26,30 +26,31 @@ const ShopNavigator = () => {
         name="Home" 
         component={HomeScreen}
         options={{
-          headerTitle: '',
-          headerLeft: () => (
-            <View style={{ marginLeft: 16, backgroundColor: 'transparent' }}>
-              <HeaderLogo />
-            </View>
-          ),
-          headerRight: () => (
-            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
-              <NotificationButton 
-                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-              />
-            </View>
-          ),
+          header: () => {
+            const HomeHeader = require('../components/HomeHeader').default;
+            return <HomeHeader />;
+          },
         }}
       />
       <Stack.Screen 
         name="Category" 
         component={CategoryScreen}
-        options={({ route }) => ({ title: route.params.categoryName })}
+        options={({ route }) => ({
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title={route.params.categoryName} />;
+          },
+        })}
       />
       <Stack.Screen 
         name="ProductDetail" 
         component={ProductDetailScreen}
-        options={{ title: 'Product Details' }}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Product Details" />;
+          },
+        }}
       />
     </Stack.Navigator>
   );

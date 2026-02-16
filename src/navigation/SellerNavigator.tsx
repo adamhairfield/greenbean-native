@@ -1,5 +1,4 @@
 import React from 'react';
-import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SellerStackParamList } from './types';
 import SellerDashboardScreen from '../screens/seller/SellerDashboardScreen';
@@ -24,14 +23,10 @@ const SellerNavigator = () => {
         name="SellerDashboard" 
         component={SellerDashboardScreen}
         options={{
-          title: 'Seller Dashboard',
-          headerRight: () => (
-            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
-              <NotificationButton 
-                onPress={() => navigation.navigate('Account', { screen: 'Notifications' })} 
-              />
-            </View>
-          ),
+          header: () => {
+            const HomeHeader = require('../components/HomeHeader').default;
+            return <HomeHeader />;
+          },
         }}
       />
       <Stack.Screen 

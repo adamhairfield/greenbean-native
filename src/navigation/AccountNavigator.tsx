@@ -14,7 +14,7 @@ import BecomeSellerScreen from '../screens/seller/BecomeSellerScreen';
 import SellerOnboardingStatusScreen from '../screens/seller/SellerOnboardingStatusScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
 import { NotificationButton, CustomBackButton } from '../components';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
 
 const Stack = createNativeStackNavigator<AccountStackParamList>();
@@ -29,14 +29,12 @@ const AccountNavigator = () => {
       <Stack.Screen 
         name="Profile" 
         component={ProfileScreen}
-        options={({ navigation }) => ({
-          title: 'My Account',
-          headerRight: () => (
-            <View style={{ marginRight: 16, backgroundColor: 'transparent' }}>
-              <NotificationButton onPress={() => navigation.navigate('Notifications')} />
-            </View>
-          ),
-        })}
+        options={{
+          header: () => {
+            const HomeHeader = require('../components/HomeHeader').default;
+            return <HomeHeader />;
+          },
+        }}
       />
       <Stack.Screen 
         name="EditProfile" 
@@ -66,17 +64,12 @@ const AccountNavigator = () => {
       <Stack.Screen 
         name="Notifications" 
         component={NotificationsScreen}
-        options={({ navigation }) => ({
-          title: 'Notifications',
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('NotificationSettings')}
-              style={{ marginRight: 16 }}
-            >
-              <MoreVertical size={24} color="#333" />
-            </TouchableOpacity>
-          ),
-        })}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Notifications" />;
+          },
+        }}
       />
       <Stack.Screen 
         name="NotificationSettings" 
@@ -91,17 +84,32 @@ const AccountNavigator = () => {
       <Stack.Screen 
         name="OrderDetail" 
         component={OrderDetailScreen}
-        options={{ title: 'Order Details' }}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Order Details" />;
+          },
+        }}
       />
       <Stack.Screen 
         name="BecomeSeller" 
         component={BecomeSellerScreen}
-        options={{ title: 'Become a Seller' }}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Become a Seller" />;
+          },
+        }}
       />
       <Stack.Screen 
         name="SellerOnboardingStatus" 
         component={SellerOnboardingStatusScreen}
-        options={{ title: 'Onboarding Status' }}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Onboarding Status" />;
+          },
+        }}
       />
     </Stack.Navigator>
   );

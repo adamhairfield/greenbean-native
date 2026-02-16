@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   notificationButton: {
     position: 'relative',
     padding: 0,
+    marginRight: 16,
   },
   badge: {
     position: 'absolute',
