@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginBottom: 8,
   },
   subtitle: {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   primaryButtonText: {
     color: '#fff',
@@ -85,10 +85,10 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
   },
   secondaryButtonText: {
-    color: '#7FAC4E',
+    color: '#34A853',
     fontSize: 16,
     fontWeight: '600',
   },

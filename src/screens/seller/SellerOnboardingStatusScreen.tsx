@@ -95,7 +95,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
     if (seller.is_verified && seller.stripe_onboarding_completed) {
       return {
         icon: 'checkmark-circle',
-        iconColor: '#7FAC4E',
+        iconColor: '#34A853',
         title: 'All Set!',
         message: 'Your seller account is active and ready to go.',
         action: 'Go to Dashboard',
@@ -171,7 +171,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
           <Ionicons
             name={seller.stripe_account_id ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={seller.stripe_account_id ? '#7FAC4E' : '#ccc'}
+            color={seller.stripe_account_id ? '#34A853' : '#ccc'}
           />
           <Text style={styles.checklistText}>Stripe account created</Text>
         </View>
@@ -180,7 +180,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
           <Ionicons
             name={seller.stripe_onboarding_completed ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={seller.stripe_onboarding_completed ? '#7FAC4E' : '#ccc'}
+            color={seller.stripe_onboarding_completed ? '#34A853' : '#ccc'}
           />
           <Text style={styles.checklistText}>Stripe onboarding completed</Text>
         </View>
@@ -189,7 +189,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
           <Ionicons
             name={seller.stripe_charges_enabled ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={seller.stripe_charges_enabled ? '#7FAC4E' : '#ccc'}
+            color={seller.stripe_charges_enabled ? '#34A853' : '#ccc'}
           />
           <Text style={styles.checklistText}>Payments enabled</Text>
         </View>
@@ -198,7 +198,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
           <Ionicons
             name={seller.stripe_payouts_enabled ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={seller.stripe_payouts_enabled ? '#7FAC4E' : '#ccc'}
+            color={seller.stripe_payouts_enabled ? '#34A853' : '#ccc'}
           />
           <Text style={styles.checklistText}>Payouts enabled</Text>
         </View>
@@ -207,7 +207,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
           <Ionicons
             name={seller.is_verified ? 'checkmark-circle' : 'ellipse-outline'}
             size={24}
-            color={seller.is_verified ? '#7FAC4E' : '#ccc'}
+            color={seller.is_verified ? '#34A853' : '#ccc'}
           />
           <Text style={styles.checklistText}>Admin verified</Text>
         </View>
@@ -225,7 +225,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
             <Text style={styles.infoLabel}>Account Status:</Text>
             <Text style={[
               styles.infoValue,
-              { color: seller.is_active ? '#7FAC4E' : '#f44336' }
+              { color: seller.is_active ? '#34A853' : '#f44336' }
             ]}>
               {seller.is_active ? 'Active' : 'Inactive'}
             </Text>
@@ -242,7 +242,7 @@ const SellerOnboardingStatusScreen: React.FC<SellerOnboardingStatusScreenProps> 
             please contact our support team.
           </Text>
           <TouchableOpacity style={styles.helpButton}>
-            <Ionicons name="mail-outline" size={20} color="#7FAC4E" />
+            <Ionicons name="mail-outline" size={20} color="#34A853" />
             <Text style={styles.helpButtonText}>Contact Support</Text>
           </TouchableOpacity>
         </Card>
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   actionButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   helpButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginLeft: 8,
   },
   errorContainer: {

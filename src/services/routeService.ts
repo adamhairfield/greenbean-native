@@ -66,7 +66,8 @@ export const getOptimizedRoute = async (
         .from('orders')
         .select(`
           id,
-          delivery_address:addresses(
+          delivery_address_id,
+          addresses!delivery_address_id(
             street_address,
             city,
             state,
@@ -76,8 +77,9 @@ export const getOptimizedRoute = async (
         .eq('id', orderId)
         .single();
 
-      if (order?.delivery_address) {
-        const address = `${order.delivery_address.street_address}, ${order.delivery_address.city}, ${order.delivery_address.state} ${order.delivery_address.zip_code}`;
+      const deliveryAddress = order?.addresses as any;
+      if (deliveryAddress) {
+        const address = `${deliveryAddress.street_address}, ${deliveryAddress.city}, ${deliveryAddress.state} ${deliveryAddress.zip_code}`;
         const coords = await geocodeAddress(address);
         
         if (coords) {
@@ -135,6 +137,49 @@ export const getOptimizedRoute = async (
     // Separate pickups and deliveries
     const pickups = stops.filter(s => s.type === 'pickup');
     const deliveries = stops.filter(s => s.type === 'delivery');
+
+    // Need at least one delivery to create a route
+    if (deliveries.length === 0) {
+      return null;
+    }
+
+    // If no pickups, just use deliveries
+    if (pickups.length === 0) {
+      // Use driver location or first delivery as origin
+      const origin = driverLocation 
+        ? { id: 'driver-start', type: 'pickup' as const, address: 'Your Location', location: driverLocation }
+        : deliveries[0];
+      const destination = deliveries[deliveries.length - 1];
+      const waypoints = deliveries.slice(1, -1).map(stop => `${stop.location.latitude},${stop.location.longitude}`).join('|');
+
+      const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.location.latitude},${origin.location.longitude}&destination=${destination.location.latitude},${destination.location.longitude}${waypoints ? `&waypoints=optimize:true|${waypoints}` : ''}&key=${GOOGLE_MAPS_API_KEY}`;
+      
+      const response = await fetch(directionsUrl);
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        
+        const optimizedStops = [origin];
+        if (data.routes[0].waypoint_order && waypoints) {
+          const allWaypoints = deliveries.slice(1, -1);
+          data.routes[0].waypoint_order.forEach((index: number) => {
+            optimizedStops.push(allWaypoints[index]);
+          });
+        } else if (deliveries.length > 2) {
+          optimizedStops.push(...deliveries.slice(1, -1));
+        }
+        optimizedStops.push(destination);
+
+        return {
+          stops: optimizedStops,
+          totalDistance: route.legs.reduce((sum: number, leg: any) => sum + leg.distance.value, 0),
+          totalDuration: route.legs.reduce((sum: number, leg: any) => sum + leg.duration.value, 0),
+          polyline: route.overview_polyline.points,
+        };
+      }
+      return null;
+    }
 
     // Build waypoints string for Google Directions API
     // Format: pickup1|pickup2|...pickupN|delivery1|delivery2|...deliveryN

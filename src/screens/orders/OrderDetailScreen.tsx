@@ -135,9 +135,9 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       pending: '#FF9800',
       confirmed: '#2196F3',
       preparing: '#9C27B0',
-      ready_for_delivery: '#7FAC4E',
+      ready_for_delivery: '#34A853',
       out_for_delivery: '#00BCD4',
-      delivered: '#7FAC4E',
+      delivered: '#34A853',
       cancelled: '#f44336',
     };
     return colors[status] || '#999';
@@ -496,7 +496,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {order.delivery_date && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Calendar size={20} color="#7FAC4E" />
+            <Calendar size={20} color="#34A853" />
             <Text style={styles.sectionTitle}>Delivery Information</Text>
           </View>
           <View style={styles.infoCard}>
@@ -518,7 +518,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && orderItems.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Store size={20} color="#7FAC4E" />
+            <Store size={20} color="#34A853" />
             <Text style={styles.sectionTitle}>Pickup Locations</Text>
           </View>
           {Array.from(new Set(orderItems.map(item => item.product.seller?.business_name).filter(Boolean))).map((businessName) => {
@@ -557,7 +557,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {(isDriver || isAdmin) && order.delivery_address && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <MapPin size={20} color="#7FAC4E" />
+            <MapPin size={20} color="#34A853" />
             <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
           <View style={styles.infoCard}>
@@ -586,7 +586,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Items */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Package size={20} color="#7FAC4E" />
+          <Package size={20} color="#34A853" />
           <Text style={styles.sectionTitle}>Items ({orderItems.length})</Text>
         </View>
         {orderItems.map((item) => (
@@ -615,7 +615,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       {/* Order Summary */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Receipt size={20} color="#7FAC4E" />
+          <Receipt size={20} color="#34A853" />
           <Text style={styles.sectionTitle}>Order Summary</Text>
         </View>
         <View style={styles.summaryCard}>
@@ -643,7 +643,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           {order.payment_status === 'paid' ? (
-            <CheckCircle size={20} color="#7FAC4E" />
+            <CheckCircle size={20} color="#34A853" />
           ) : (
             <Clock size={20} color="#FF9800" />
           )}
@@ -654,7 +654,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
             style={[
               styles.paymentStatus,
               {
-                color: order.payment_status === 'paid' ? '#7FAC4E' : '#FF9800',
+                color: order.payment_status === 'paid' ? '#34A853' : '#FF9800',
               },
             ]}
           >
@@ -828,7 +828,7 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
                 style={styles.takePhotoButton}
                 onPress={takeDeliveryPhoto}
               >
-                <Camera size={48} color="#7FAC4E" />
+                <Camera size={48} color="#34A853" />
                 <Text style={styles.takePhotoText}>Take Photo</Text>
               </TouchableOpacity>
             )}
@@ -1019,7 +1019,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   paymentStatus: {
     fontSize: 18,
@@ -1030,7 +1030,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     padding: 16,
     borderRadius: 8,
     gap: 8,
@@ -1082,7 +1082,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   refundButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   actionButtonText: {
     color: '#fff',
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
   refundSummaryAmount: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   refundSummaryNote: {
     fontSize: 12,
@@ -1241,7 +1241,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1273,7 +1273,7 @@ const styles = StyleSheet.create({
   retakePhotoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1291,7 +1291,7 @@ const styles = StyleSheet.create({
     padding: 40,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
     borderStyle: 'dashed',
     marginVertical: 20,
   },
@@ -1299,7 +1299,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     fontWeight: '600',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   modalButtonDisabled: {
     opacity: 0.5,

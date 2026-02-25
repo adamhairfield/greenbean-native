@@ -259,7 +259,7 @@ const EditAddressScreen: React.FC<EditAddressScreenProps> = ({ navigation, route
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7FAC4E" />
+        <ActivityIndicator size="large" color="#34A853" />
       </View>
     );
   }
@@ -282,7 +282,7 @@ const EditAddressScreen: React.FC<EditAddressScreenProps> = ({ navigation, route
               <ActivityIndicator
                 style={styles.searchingIndicator}
                 size="small"
-                color="#7FAC4E"
+                color="#34A853"
               />
             )}
             {showSuggestions && suggestions.length > 0 && (
@@ -297,7 +297,7 @@ const EditAddressScreen: React.FC<EditAddressScreenProps> = ({ navigation, route
                       style={styles.suggestionItem}
                       onPress={() => handleSelectSuggestion(item)}
                     >
-                      <Ionicons name="location-outline" size={20} color="#7FAC4E" />
+                      <Ionicons name="location-outline" size={20} color="#34A853" />
                       <Text style={styles.suggestionText}>
                         {item.description}
                       </Text>
@@ -385,7 +385,7 @@ const EditAddressScreen: React.FC<EditAddressScreenProps> = ({ navigation, route
             value={isDefault}
             onValueChange={setIsDefault}
             trackColor={{ false: '#ccc', true: '#B8D49A' }}
-            thumbColor={isDefault ? '#7FAC4E' : '#f4f3f4'}
+            thumbColor={isDefault ? '#34A853' : '#f4f3f4'}
           />
         </View>
 
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   saveButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

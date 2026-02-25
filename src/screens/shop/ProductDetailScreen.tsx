@@ -163,7 +163,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           <View style={styles.stockContainer}>
             {product.stock_quantity > 0 ? (
               <>
-                <Ionicons name="checkmark-circle" size={20} color="#7FAC4E" />
+                <Ionicons name="checkmark-circle" size={20} color="#34A853" />
                 <Text style={styles.inStock}>
                   In Stock ({product.stock_quantity} available)
                 </Text>
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   organicText: {
     fontSize: 14,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   priceContainer: {
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginRight: 8,
   },
   unit: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   },
   inStock: {
     fontSize: 14,
-    color: '#7FAC4E',
+    color: '#34A853',
     marginLeft: 8,
     fontWeight: '600',
   },
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   addToCartButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   backButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,

@@ -148,7 +148,7 @@ const ManageSellersScreen: React.FC<ManageSellersScreenProps> = () => {
           <View style={styles.statusBadges}>
             {item.is_verified && (
               <View style={[styles.badge, styles.verifiedBadge]}>
-                <Ionicons name="checkmark-circle" size={16} color="#7FAC4E" />
+                <Ionicons name="checkmark-circle" size={16} color="#34A853" />
                 <Text style={styles.verifiedText}>Verified</Text>
               </View>
             )}
@@ -184,7 +184,7 @@ const ManageSellersScreen: React.FC<ManageSellersScreenProps> = () => {
             <Ionicons 
               name={item.stripe_onboarding_completed ? "checkmark-circle" : "close-circle"} 
               size={16} 
-              color={item.stripe_onboarding_completed ? "#7FAC4E" : "#f44336"} 
+              color={item.stripe_onboarding_completed ? "#34A853" : "#f44336"} 
             />
             <Text style={styles.detailText}>
               Stripe: {item.stripe_onboarding_completed ? 'Complete' : 'Incomplete'}
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: 12,
-    color: '#7FAC4E',
+    color: '#34A853',
     marginLeft: 4,
     fontWeight: '600',
   },
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   approveButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   rejectButton: {
     backgroundColor: '#f44336',

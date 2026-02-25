@@ -399,7 +399,7 @@ const PromoCodesScreen = () => {
                     value={isActive}
                     onValueChange={setIsActive}
                     trackColor={{ false: '#ccc', true: '#B8D49A' }}
-                    thumbColor={isActive ? '#7FAC4E' : '#f4f3f4'}
+                    thumbColor={isActive ? '#34A853' : '#f4f3f4'}
                   />
                 </View>
               </View>
@@ -414,7 +414,7 @@ const PromoCodesScreen = () => {
                     value={showOnBanner}
                     onValueChange={setShowOnBanner}
                     trackColor={{ false: '#ccc', true: '#B8D49A' }}
-                    thumbColor={showOnBanner ? '#7FAC4E' : '#f4f3f4'}
+                    thumbColor={showOnBanner ? '#34A853' : '#f4f3f4'}
                   />
                 </View>
               </View>
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   promoCodeBadge: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   segmentActive: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   segmentText: {
     fontSize: 14,
@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     alignItems: 'center',
   },
   saveButtonText: {

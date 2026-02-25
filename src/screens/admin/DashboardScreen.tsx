@@ -61,7 +61,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             onPress={() => navigation.navigate(item.screen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name={item.icon} size={32} color="#7FAC4E" />
+              <Ionicons name={item.icon} size={32} color="#34A853" />
             </View>
             <Text style={styles.menuTitle}>{item.title}</Text>
             <Text style={styles.menuDescription}>{item.description}</Text>

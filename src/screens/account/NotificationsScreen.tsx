@@ -116,7 +116,7 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation })
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'order':
-        return <Package size={24} color="#7FAC4E" />;
+        return <Package size={24} color="#34A853" />;
       case 'refund':
         return <DollarSign size={24} color="#FF9800" />;
       case 'delivery':
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   markAllButton: {
     fontSize: 14,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   notificationCard: {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     marginLeft: 8,
   },
   message: {

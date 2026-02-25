@@ -25,7 +25,7 @@ export async function registerForPushNotificationsAsync(userId: string): Promise
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#7FAC4E',
+      lightColor: '#34A853',
     });
   }
 

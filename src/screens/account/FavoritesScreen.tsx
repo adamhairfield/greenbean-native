@@ -66,10 +66,8 @@ const FavoritesScreen: React.FC<FavoritesScreenProps> = ({ navigation }) => {
   };
 
   const handleProductPress = (productId: string) => {
-    // Navigate to product detail - we need to navigate to the Shop stack
-    navigation.navigate('Profile');
-    // Note: To navigate to ProductDetail, we'd need access to the Shop navigator
-    // For now, we'll just go back to profile
+    // Navigate to product detail within the Account stack
+    navigation.navigate('ProductDetail', { productId });
   };
 
   if (loading) {
@@ -102,8 +100,8 @@ const FavoritesScreen: React.FC<FavoritesScreenProps> = ({ navigation }) => {
         >
           <Heart
             size={18}
-            color="#7FAC4E"
-            fill="#7FAC4E"
+            color="#34A853"
+            fill="#34A853"
           />
         </TouchableOpacity>
       </View>
@@ -243,7 +241,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   productUnit: {
     fontSize: 12,
@@ -258,7 +256,7 @@ const styles = StyleSheet.create({
   },
   organicText: {
     fontSize: 10,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   emptyContainer: {

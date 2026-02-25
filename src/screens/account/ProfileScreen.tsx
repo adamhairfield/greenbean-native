@@ -40,7 +40,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
-          <UserCircle2 size={100} color="#7FAC4E" />
+          <UserCircle2 size={100} color="#34A853" />
         </View>
         <Text style={styles.name}>{profile?.full_name || 'User'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
@@ -90,7 +90,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               style={styles.menuItem}
               onPress={() => navigation.navigate('Addresses')}
             >
-              <MapPin size={24} color="#7FAC4E" />
+              <MapPin size={24} color="#34A853" />
               <View style={styles.menuItemContent}>
                 <Text style={styles.menuItemTitle}>Delivery Addresses</Text>
                 <Text style={styles.menuItemSubtitle}>Manage your delivery locations</Text>
@@ -102,7 +102,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               style={styles.menuItem}
               onPress={() => navigation.navigate('Favorites')}
             >
-              <Heart size={24} color="#7FAC4E" />
+              <Heart size={24} color="#34A853" />
               <View style={styles.menuItemContent}>
                 <Text style={styles.menuItemTitle}>Favorites</Text>
                 <Text style={styles.menuItemSubtitle}>Your saved products</Text>
@@ -116,7 +116,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           style={styles.menuItem}
           onPress={() => navigation.navigate('NotificationSettings')}
         >
-          <Bell size={24} color="#7FAC4E" />
+          <Bell size={24} color="#34A853" />
           <View style={styles.menuItemContent}>
             <Text style={styles.menuItemTitle}>Notification Settings</Text>
             <Text style={styles.menuItemSubtitle}>Manage your notification preferences</Text>
@@ -132,7 +132,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             style={styles.becomeSellerButton} 
             onPress={() => navigation.navigate('BecomeSeller')}
           >
-            <Store size={24} color="#7FAC4E" />
+            <Store size={24} color="#34A853" />
             <View style={styles.becomeSellerContent}>
               <Text style={styles.becomeSellerTitle}>Become a Seller</Text>
               <Text style={styles.becomeSellerSubtitle}>
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   roleBadge: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
   },
   becomeSellerContent: {
     flex: 1,

@@ -211,8 +211,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   >
                     <Heart
                       size={20}
-                      color="#7FAC4E"
-                      fill={isFavorite(product.id) ? '#7FAC4E' : 'transparent'}
+                      color="#34A853"
+                      fill={isFavorite(product.id) ? '#34A853' : 'transparent'}
                     />
                   </TouchableOpacity>
                   <Text style={styles.productName} numberOfLines={2}>
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   banner: {
     margin: 16,
     padding: 24,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   bannerTitle: {
     fontSize: 20,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   promoBanner: {
     margin: 16,
     padding: 20,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   promoHeader: {
     flexDirection: 'row',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 14,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   categoryCard: {
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   productUnit: {
     fontSize: 12,

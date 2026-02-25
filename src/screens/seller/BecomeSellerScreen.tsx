@@ -207,7 +207,7 @@ const BecomeSellerScreen: React.FC<BecomeSellerScreenProps> = ({
       >
         {/* Header */}
         <View style={styles.header}>
-          <Ionicons name="storefront" size={48} color="#7FAC4E" />
+          <Ionicons name="storefront" size={48} color="#34A853" />
           <Text style={styles.title}>Become a Seller</Text>
           <Text style={styles.subtitle}>
             Start selling your farm-fresh products on Greenbean
@@ -218,19 +218,19 @@ const BecomeSellerScreen: React.FC<BecomeSellerScreenProps> = ({
         <View style={styles.benefitsCard}>
           <Text style={styles.benefitsTitle}>What you'll get:</Text>
           <View style={styles.benefit}>
-            <Ionicons name="checkmark-circle" size={20} color="#7FAC4E" />
+            <Ionicons name="checkmark-circle" size={20} color="#34A853" />
             <Text style={styles.benefitText}>Reach local customers</Text>
           </View>
           <View style={styles.benefit}>
-            <Ionicons name="checkmark-circle" size={20} color="#7FAC4E" />
+            <Ionicons name="checkmark-circle" size={20} color="#34A853" />
             <Text style={styles.benefitText}>Manage your inventory easily</Text>
           </View>
           <View style={styles.benefit}>
-            <Ionicons name="checkmark-circle" size={20} color="#7FAC4E" />
+            <Ionicons name="checkmark-circle" size={20} color="#34A853" />
             <Text style={styles.benefitText}>Secure payments via Stripe</Text>
           </View>
           <View style={styles.benefit}>
-            <Ionicons name="checkmark-circle" size={20} color="#7FAC4E" />
+            <Ionicons name="checkmark-circle" size={20} color="#34A853" />
             <Text style={styles.benefitText}>Track your sales and revenue</Text>
           </View>
         </View>
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   submitButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

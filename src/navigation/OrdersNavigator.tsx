@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { OrdersStackParamList } from './types';
 import OrdersListScreen from '../screens/orders/OrdersListScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
+import NotificationsScreen from '../screens/account/NotificationsScreen';
 import { NotificationButton, CustomBackButton } from '../components';
 import { useNavigation } from '@react-navigation/native';
 
@@ -34,6 +35,16 @@ const OrdersNavigator = () => {
           header: () => {
             const StandardHeader = require('../components/StandardHeader').default;
             return <StandardHeader title="Order Details" />;
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Notifications" />;
           },
         }}
       />

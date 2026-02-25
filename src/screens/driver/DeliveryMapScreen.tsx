@@ -113,7 +113,7 @@ const DeliveryMapScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7FAC4E" />
+        <ActivityIndicator size="large" color="#34A853" />
         <Text style={styles.loadingText}>Optimizing route...</Text>
       </View>
     );
@@ -165,7 +165,7 @@ const DeliveryMapScreen = () => {
         {routeCoordinates.length > 0 && (
           <Polyline
             coordinates={routeCoordinates}
-            strokeColor="#7FAC4E"
+            strokeColor="#34A853"
             strokeWidth={4}
           />
         )}
@@ -200,17 +200,17 @@ const DeliveryMapScreen = () => {
       <View style={styles.summaryCard}>
         <View style={styles.summaryRow}>
           <View style={styles.summaryItem}>
-            <Ionicons name="navigate" size={20} color="#7FAC4E" />
+            <Ionicons name="navigate" size={20} color="#34A853" />
             <Text style={styles.summaryValue}>{formatDistance(route.totalDistance)}</Text>
             <Text style={styles.summaryLabel}>Distance</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Ionicons name="time" size={20} color="#7FAC4E" />
+            <Ionicons name="time" size={20} color="#34A853" />
             <Text style={styles.summaryValue}>{formatDuration(route.totalDuration)}</Text>
             <Text style={styles.summaryLabel}>Duration</Text>
           </View>
           <View style={styles.summaryItem}>
-            <Ionicons name="location" size={20} color="#7FAC4E" />
+            <Ionicons name="location" size={20} color="#34A853" />
             <Text style={styles.summaryValue}>{route.stops.length}</Text>
             <Text style={styles.summaryLabel}>Stops</Text>
           </View>
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9800',
   },
   deliveryMarker: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   markerNumber: {
     position: 'absolute',
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     marginTop: 16,
     padding: 14,
     borderRadius: 8,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9800',
   },
   deliveryBadge: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   stopBadgeText: {
     fontSize: 12,

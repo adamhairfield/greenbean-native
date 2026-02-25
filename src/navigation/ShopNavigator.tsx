@@ -5,6 +5,7 @@ import { ShopStackParamList } from './types';
 import HomeScreen from '../screens/shop/HomeScreen';
 import CategoryScreen from '../screens/shop/CategoryScreen';
 import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
+import NotificationsScreen from '../screens/account/NotificationsScreen';
 import { NotificationButton, CustomBackButton, HeaderLogo } from '../components';
 import { useNavigation } from '@react-navigation/native';
 
@@ -49,6 +50,16 @@ const ShopNavigator = () => {
           header: () => {
             const StandardHeader = require('../components/StandardHeader').default;
             return <StandardHeader title="Product Details" />;
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Notifications" />;
           },
         }}
       />

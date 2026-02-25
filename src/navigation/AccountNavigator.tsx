@@ -13,6 +13,7 @@ import SettingsScreen from '../screens/account/SettingsScreen';
 import BecomeSellerScreen from '../screens/seller/BecomeSellerScreen';
 import SellerOnboardingStatusScreen from '../screens/seller/SellerOnboardingStatusScreen';
 import OrderDetailScreen from '../screens/orders/OrderDetailScreen';
+import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
 import { NotificationButton, CustomBackButton } from '../components';
 import { TouchableOpacity } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
@@ -108,6 +109,16 @@ const AccountNavigator = () => {
           header: () => {
             const StandardHeader = require('../components/StandardHeader').default;
             return <StandardHeader title="Onboarding Status" />;
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="ProductDetail" 
+        component={ProductDetailScreen}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Product Details" />;
           },
         }}
       />

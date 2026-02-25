@@ -92,8 +92,8 @@ const CategoryScreen: React.FC<CategoryScreenProps> = ({ route, navigation }) =>
         >
           <Heart
             size={18}
-            color="#7FAC4E"
-            fill={isFavorite(item.id) ? '#7FAC4E' : 'transparent'}
+            color="#34A853"
+            fill={isFavorite(item.id) ? '#34A853' : 'transparent'}
           />
         </TouchableOpacity>
       </View>
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   productUnit: {
     fontSize: 12,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   organicText: {
     fontSize: 10,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   emptyContainer: {

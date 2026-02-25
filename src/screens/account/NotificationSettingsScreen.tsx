@@ -124,7 +124,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
           <Switch
             value={preferences.push_enabled}
             onValueChange={(value) => updatePreference('push_enabled', value)}
-            trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+            trackColor={{ false: '#ccc', true: '#34A853' }}
           />
         </View>
 
@@ -138,7 +138,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
           <Switch
             value={preferences.email_enabled}
             onValueChange={(value) => updatePreference('email_enabled', value)}
-            trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+            trackColor={{ false: '#ccc', true: '#34A853' }}
             disabled
           />
         </View>
@@ -159,7 +159,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.order_status_update}
               onValueChange={(value) => updatePreference('order_status_update', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
 
@@ -173,7 +173,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.order_delivered}
               onValueChange={(value) => updatePreference('order_delivered', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
 
@@ -187,7 +187,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.order_cancelled}
               onValueChange={(value) => updatePreference('order_cancelled', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
 
@@ -201,7 +201,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.refund_processed}
               onValueChange={(value) => updatePreference('refund_processed', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
         </View>
@@ -222,7 +222,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.new_order}
               onValueChange={(value) => updatePreference('new_order', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
 
@@ -236,7 +236,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.product_sold}
               onValueChange={(value) => updatePreference('product_sold', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
 
@@ -250,7 +250,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.low_stock_alert}
               onValueChange={(value) => updatePreference('low_stock_alert', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
         </View>
@@ -271,7 +271,7 @@ const NotificationSettingsScreen: React.FC<NotificationSettingsScreenProps> = ()
             <Switch
               value={preferences.delivery_assigned}
               onValueChange={(value) => updatePreference('delivery_assigned', value)}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
             />
           </View>
         </View>

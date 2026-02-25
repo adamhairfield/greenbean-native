@@ -5,6 +5,7 @@ import CartScreen from '../screens/shop/CartScreen';
 import CheckoutScreen from '../screens/shop/CheckoutScreen';
 import OrderConfirmationScreen from '../screens/shop/OrderConfirmationScreen';
 import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
+import NotificationsScreen from '../screens/account/NotificationsScreen';
 import { NotificationButton, CustomBackButton } from '../components';
 import { useNavigation } from '@react-navigation/native';
 
@@ -56,6 +57,16 @@ const CartNavigator = () => {
           header: () => {
             const StandardHeader = require('../components/StandardHeader').default;
             return <StandardHeader title="Product Details" />;
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Notifications" />;
           },
         }}
       />

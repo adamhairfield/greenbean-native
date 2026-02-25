@@ -6,6 +6,7 @@ export type RootStackParamList = {
 };
 
 export type AuthStackParamList = {
+  Onboarding: undefined;
   Welcome: undefined;
   SignIn: undefined;
   SignUp: undefined;
@@ -26,18 +27,26 @@ export type ShopStackParamList = {
   Home: undefined;
   Category: { categoryId: string; categoryName: string };
   ProductDetail: { productId: string };
+  Notifications: undefined;
 };
 
 export type CartStackParamList = {
   CartMain: undefined;
   Checkout: undefined;
-  OrderConfirmation: { orderId: string };
+  OrderConfirmation: { 
+    orderId: string; 
+    orderNumber?: string; 
+    success: boolean; 
+    errorMessage?: string;
+  };
   ProductDetail: { productId: string };
+  Notifications: undefined;
 };
 
 export type OrdersStackParamList = {
   OrdersList: undefined;
   OrderDetail: { orderId: string };
+  Notifications: undefined;
 };
 
 export type AccountStackParamList = {
@@ -53,6 +62,7 @@ export type AccountStackParamList = {
   BecomeSeller: undefined;
   SellerOnboardingStatus: undefined;
   OrderDetail: { orderId: string };
+  ProductDetail: { productId: string };
 };
 
 export type SellerStackParamList = {

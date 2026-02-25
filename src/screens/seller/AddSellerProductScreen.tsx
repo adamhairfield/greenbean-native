@@ -353,10 +353,10 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
               disabled={uploadingImage}
             >
               {uploadingImage ? (
-                <ActivityIndicator size="large" color="#7FAC4E" />
+                <ActivityIndicator size="large" color="#34A853" />
               ) : (
                 <>
-                  <Ionicons name="cloud-upload-outline" size={48} color="#7FAC4E" />
+                  <Ionicons name="cloud-upload-outline" size={48} color="#34A853" />
                   <Text style={styles.uploadButtonText}>Tap to upload image</Text>
                 </>
               )}
@@ -371,7 +371,7 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
             <Switch
               value={isOrganic}
               onValueChange={setIsOrganic}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
               thumbColor="#fff"
             />
           </View>
@@ -383,7 +383,7 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
             <Switch
               value={isAvailable}
               onValueChange={setIsAvailable}
-              trackColor={{ false: '#ccc', true: '#7FAC4E' }}
+              trackColor={{ false: '#ccc', true: '#34A853' }}
               thumbColor="#fff"
             />
           </View>
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   unitButtonActive: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   unitButtonText: {
     fontSize: 14,
@@ -484,8 +484,8 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   categoryButtonActive: {
-    backgroundColor: '#7FAC4E',
-    borderColor: '#7FAC4E',
+    backgroundColor: '#34A853',
+    borderColor: '#34A853',
   },
   categoryButtonText: {
     fontSize: 14,
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   submitButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   uploadButton: {
     backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
     borderStyle: 'dashed',
     borderRadius: 8,
     padding: 40,
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   uploadButtonText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   imageContainer: {

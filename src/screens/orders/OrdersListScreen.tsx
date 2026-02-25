@@ -167,9 +167,9 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
       pending: '#FF9800',
       confirmed: '#2196F3',
       preparing: '#9C27B0',
-      ready_for_delivery: '#7FAC4E',
+      ready_for_delivery: '#34A853',
       out_for_delivery: '#00BCD4',
-      delivered: '#7FAC4E',
+      delivered: '#34A853',
       cancelled: '#f44336',
     };
     return colors[status] || '#999';
@@ -196,7 +196,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       {(isMasterAdmin || isDriver) && (
         <View style={styles.adminBanner}>
-          <ShieldCheck size={20} color="#7FAC4E" />
+          <ShieldCheck size={20} color="#34A853" />
           <Text style={styles.adminBannerText}>
             {isDriver ? 'Viewing All Orders for Delivery' : 'Viewing All Platform Orders'}
           </Text>
@@ -264,7 +264,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
               </View>
               <View style={styles.detailRow}>
                 {item.payment_status === 'paid' ? (
-                  <CheckCircle size={16} color="#7FAC4E" />
+                  <CheckCircle size={16} color="#34A853" />
                 ) : (
                   <Clock size={16} color="#FF9800" />
                 )}
@@ -276,7 +276,7 @@ const OrdersListScreen: React.FC<OrdersListScreenProps> = ({ navigation }) => {
 
             <View style={styles.orderFooter}>
               <Text style={styles.viewDetails}>View Details</Text>
-              <ChevronRight size={20} color="#7FAC4E" />
+              <ChevronRight size={20} color="#34A853" />
             </View>
           </TouchableOpacity>
         )}
@@ -298,13 +298,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#7FAC4E',
+    borderBottomColor: '#34A853',
   },
   adminBannerText: {
     marginLeft: 8,
     fontSize: 14,
     fontWeight: '600',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   sellerBanner: {
     flexDirection: 'row',
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   viewDetails: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginRight: 4,
   },
 });

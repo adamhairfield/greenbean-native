@@ -144,7 +144,7 @@ const AddressesScreen: React.FC<AddressesScreenProps> = ({ navigation }) => {
           <View style={styles.addressCard}>
             <View style={styles.addressHeader}>
               <View style={styles.addressTitleRow}>
-                <Ionicons name="location" size={20} color="#7FAC4E" />
+                <Ionicons name="location" size={20} color="#34A853" />
                 <Text style={styles.addressTitle}>
                   {item.is_default ? 'Home (Default)' : 'Address'}
                 </Text>
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
   },
   setDefaultText: {
     fontSize: 14,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '600',
   },
   addButton: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

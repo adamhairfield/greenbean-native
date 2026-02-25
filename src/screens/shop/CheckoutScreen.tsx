@@ -344,20 +344,21 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
       // Clear cart
       await clearCart();
 
-      // Show success and navigate
-      Alert.alert(
-        'Order Placed!',
-        `Your order #${order.order_number} has been placed and paid successfully. We'll notify you when it's on the way!`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      // Navigate to success screen
+      navigation.navigate('OrderConfirmation', {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        success: true,
+      });
     } catch (error: any) {
       console.error('Error placing order:', error);
-      Alert.alert('Error', error.message || 'Failed to place order. Please try again.');
+      
+      // Navigate to failure screen
+      navigation.navigate('OrderConfirmation', {
+        orderId: '',
+        success: false,
+        errorMessage: error.message || 'Failed to place order. Please try again.',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -387,7 +388,7 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7FAC4E" />
+        <ActivityIndicator size="large" color="#34A853" />
         <Text style={styles.loadingText}>Loading checkout...</Text>
       </View>
     );
@@ -569,8 +570,8 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ navigation }) => {
             )}
             {discount > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: '#7FAC4E' }]}>Discount</Text>
-                <Text style={[styles.summaryValue, { color: '#7FAC4E' }]}>-${discount.toFixed(2)}</Text>
+                <Text style={[styles.summaryLabel, { color: '#34A853' }]}>Discount</Text>
+                <Text style={[styles.summaryValue, { color: '#34A853' }]}>-${discount.toFixed(2)}</Text>
               </View>
             )}
             <View style={styles.summaryRow}>
@@ -665,7 +666,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   addressCardSelected: {
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
     backgroundColor: '#f1f8f4',
   },
   addressHeader: {
@@ -678,7 +679,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -687,7 +688,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
   },
   addressInfo: {
     flex: 1,
@@ -701,7 +702,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   defaultBadge: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -728,7 +729,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scheduleCardSelected: {
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
     backgroundColor: '#f1f8f4',
   },
   scheduleInfo: {
@@ -747,7 +748,7 @@ const styles = StyleSheet.create({
   },
   scheduleCapacity: {
     fontSize: 12,
-    color: '#7FAC4E',
+    color: '#34A853',
     fontWeight: '500',
   },
   instructionsInput: {
@@ -793,7 +794,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   emptyText: {
     fontSize: 14,
@@ -847,7 +848,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   placeOrderButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -880,7 +881,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   applyPromoButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingHorizontal: 20,
     borderRadius: 8,
     justifyContent: 'center',
@@ -903,7 +904,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#7FAC4E',
+    borderColor: '#34A853',
   },
   appliedPromoInfo: {
     flex: 1,
@@ -911,7 +912,7 @@ const styles = StyleSheet.create({
   appliedPromoCode: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginBottom: 4,
   },
   appliedPromoDiscount: {

@@ -166,7 +166,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
                   if (result.onboardingUrl) {
                     const browserResult = await WebBrowser.openBrowserAsync(result.onboardingUrl, {
                       presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-                      controlsColor: '#7FAC4E',
+                      controlsColor: '#34A853',
                     });
                     
                     // Refresh seller data when browser closes
@@ -197,7 +197,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
           if (result.url) {
             const browserResult = await WebBrowser.openBrowserAsync(result.url, {
               presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-              controlsColor: '#7FAC4E',
+              controlsColor: '#34A853',
             });
             
             // Refresh seller data when browser closes
@@ -307,7 +307,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
         <View style={styles.statsRow}>
           <Card style={styles.statCardWide}>
             <View style={styles.statRow}>
-              <Ionicons name="cube-outline" size={32} color="#7FAC4E" />
+              <Ionicons name="cube-outline" size={32} color="#34A853" />
               <View style={styles.statInfo}>
                 <Text style={styles.statValueLarge}>{stats.total_products}</Text>
                 <Text style={styles.statLabel}>Total Products</Text>
@@ -316,7 +316,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
           </Card>
           <Card style={styles.statCardWide}>
             <View style={styles.statRow}>
-              <Ionicons name="checkmark-circle-outline" size={32} color="#7FAC4E" />
+              <Ionicons name="checkmark-circle-outline" size={32} color="#34A853" />
               <View style={styles.statInfo}>
                 <Text style={styles.statValueLarge}>{stats.active_products}</Text>
                 <Text style={styles.statLabel}>Active</Text>
@@ -334,7 +334,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
           onPress={() => navigation.navigate('SellerProducts')}
         >
           <View style={styles.actionIcon}>
-            <Ionicons name="list-outline" size={24} color="#7FAC4E" />
+            <Ionicons name="list-outline" size={24} color="#34A853" />
           </View>
           <View style={styles.actionContent}>
             <Text style={styles.actionTitle}>Manage Products</Text>
@@ -350,7 +350,7 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
           onPress={() => navigation.navigate('AddSellerProduct')}
         >
           <View style={styles.actionIcon}>
-            <Ionicons name="add-circle-outline" size={24} color="#7FAC4E" />
+            <Ionicons name="add-circle-outline" size={24} color="#34A853" />
           </View>
           <View style={styles.actionContent}>
             <Text style={styles.actionTitle}>Add New Product</Text>
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
     marginBottom: 4,
   },
   statLabel: {

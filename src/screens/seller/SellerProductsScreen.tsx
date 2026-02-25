@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   stockText: {
     fontSize: 14,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusActiveText: {
-    color: '#7FAC4E',
+    color: '#34A853',
   },
   statusInactiveText: {
     color: '#f44336',
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   addButton: {
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#7FAC4E',
+    backgroundColor: '#34A853',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
