@@ -18,7 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const { user_id, title, message, type, related_id, preference_key } = await req.json()
+    const { user_id, title, message, type, related_order_id, preference_key } = await req.json()
 
     if (!user_id || !title || !message || !type) {
       throw new Error('Missing required fields')
@@ -48,7 +48,7 @@ serve(async (req) => {
         title,
         message,
         type,
-        related_id,
+        related_order_id,
       })
 
     if (notificationError) {
@@ -68,7 +68,7 @@ serve(async (req) => {
             user_id,
             title,
             body: message,
-            data: { type, orderId: related_id },
+            data: { type, orderId: related_order_id },
           }),
         })
 

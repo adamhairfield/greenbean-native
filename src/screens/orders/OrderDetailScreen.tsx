@@ -30,6 +30,8 @@ type Order = Database['public']['Tables']['orders']['Row'] & {
     zip_code: string;
     delivery_instructions?: string | null;
   };
+  delivery_photo_url?: string | null;
+  delivered_at?: string | null;
 };
 type OrderItem = {
   id: string;
@@ -576,6 +578,31 @@ const OrderDetailScreen: React.FC<OrderDetailScreenProps> = ({ route }) => {
                 <Text style={styles.infoLabel}>Delivery Instructions</Text>
                 <Text style={styles.infoValue}>
                   {order.delivery_address.delivery_instructions}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Delivery Confirmation Photo */}
+      {order.status === 'delivered' && order.delivery_photo_url && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Camera size={20} color="#34A853" />
+            <Text style={styles.sectionTitle}>Delivery Confirmation</Text>
+          </View>
+          <View style={styles.infoCard}>
+            <Image
+              source={{ uri: order.delivery_photo_url }}
+              style={styles.deliveryPhoto}
+              resizeMode="cover"
+            />
+            {order.delivered_at && (
+              <View style={[styles.infoRow, { marginTop: 12 }]}>
+                <Text style={styles.infoLabel}>Delivered at</Text>
+                <Text style={styles.infoValue}>
+                  {new Date(order.delivered_at).toLocaleString()}
                 </Text>
               </View>
             )}
@@ -1269,6 +1296,11 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 12,
     marginBottom: 16,
+  },
+  deliveryPhoto: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
   },
   retakePhotoButton: {
     flexDirection: 'row',

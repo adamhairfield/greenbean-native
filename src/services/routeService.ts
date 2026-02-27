@@ -25,15 +25,23 @@ export interface OptimizedRoute {
 // Geocode an address to get coordinates
 export const geocodeAddress = async (address: string): Promise<{ latitude: number; longitude: number } | null> => {
   try {
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`
-    );
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`;
+    console.log('Geocoding URL:', url.replace(GOOGLE_MAPS_API_KEY, 'API_KEY_HIDDEN'));
+    
+    const response = await fetch(url);
     const data = await response.json();
+    
+    console.log('Geocoding API response:', { status: data.status, error_message: data.error_message, results_count: data.results?.length });
     
     if (data.results && data.results.length > 0) {
       const { lat, lng } = data.results[0].geometry.location;
       return { latitude: lat, longitude: lng };
     }
+    
+    if (data.status !== 'OK') {
+      console.error('Geocoding failed:', data.status, data.error_message);
+    }
+    
     return null;
   } catch (error) {
     console.error('Geocoding error:', error);
@@ -47,7 +55,9 @@ export const getOptimizedRoute = async (
   driverLocation?: { latitude: number; longitude: number }
 ): Promise<OptimizedRoute | null> => {
   try {
+    console.log('getOptimizedRoute called with:', { orderIds, driverLocation });
     const stops: RouteStop[] = [];
+    const sellersMap = new Map(); // Track unique sellers across all orders
     
     // Add driver's starting location if provided
     if (driverLocation) {
@@ -62,7 +72,7 @@ export const getOptimizedRoute = async (
     // Collect all pickup and delivery locations
     for (const orderId of orderIds) {
       // Get delivery address
-      const { data: order } = await supabase
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .select(`
           id,
@@ -77,10 +87,14 @@ export const getOptimizedRoute = async (
         .eq('id', orderId)
         .single();
 
+      console.log('Order fetch result:', { orderId, order, orderError });
+
       const deliveryAddress = order?.addresses as any;
       if (deliveryAddress) {
         const address = `${deliveryAddress.street_address}, ${deliveryAddress.city}, ${deliveryAddress.state} ${deliveryAddress.zip_code}`;
+        console.log('Geocoding delivery address:', address);
         const coords = await geocodeAddress(address);
+        console.log('Geocoding result:', coords);
         
         if (coords) {
           stops.push({
@@ -91,6 +105,8 @@ export const getOptimizedRoute = async (
             orderId: order.id,
           });
         }
+      } else {
+        console.log('No delivery address found for order:', orderId);
       }
 
       // Get pickup locations
@@ -107,30 +123,33 @@ export const getOptimizedRoute = async (
         `)
         .eq('order_id', orderId);
 
-      // Get unique sellers
-      const sellersMap = new Map();
+      // Collect unique sellers across all orders
       items?.forEach((item: any) => {
         const seller = item.product?.seller;
         if (seller && seller.business_address && !sellersMap.has(seller.id)) {
           sellersMap.set(seller.id, seller);
         }
       });
+    }
 
-      for (const seller of sellersMap.values()) {
-        const coords = await geocodeAddress(seller.business_address);
-        if (coords) {
-          stops.push({
-            id: `pickup-${seller.id}`,
-            type: 'pickup',
-            address: seller.business_address,
-            location: coords,
-            sellerName: seller.business_name,
-          });
-        }
+    // Add pickup stops for all unique sellers
+    for (const seller of sellersMap.values()) {
+      const coords = await geocodeAddress(seller.business_address);
+      if (coords) {
+        stops.push({
+          id: `pickup-${seller.id}`,
+          type: 'pickup',
+          address: seller.business_address,
+          location: coords,
+          sellerName: seller.business_name,
+        });
       }
     }
 
+    console.log('Total stops collected:', stops.length);
+    
     if (stops.length === 0) {
+      console.log('No stops found, returning null');
       return null;
     }
 
@@ -138,8 +157,11 @@ export const getOptimizedRoute = async (
     const pickups = stops.filter(s => s.type === 'pickup');
     const deliveries = stops.filter(s => s.type === 'delivery');
 
+    console.log('Pickups:', pickups.length, 'Deliveries:', deliveries.length);
+
     // Need at least one delivery to create a route
     if (deliveries.length === 0) {
+      console.log('No deliveries found, returning null');
       return null;
     }
 

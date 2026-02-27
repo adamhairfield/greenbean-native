@@ -59,6 +59,8 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
     pending_revenue: 0,
     paid_revenue: 0,
   });
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -84,6 +86,33 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
 
         if (statsData && statsData.length > 0) {
           setStats(statsData[0]);
+        }
+
+        // Fetch top 5 selling products
+        const { data: topProductsData } = await supabase
+          .from('products')
+          .select('id, name, total_sales, total_revenue, stock_quantity')
+          .eq('seller_id', sellerData.id)
+          .order('total_sales', { ascending: false })
+          .limit(5);
+
+        if (topProductsData) {
+          setTopProducts(topProductsData);
+        }
+
+        // Fetch low stock products (where stock_quantity <= low_stock_threshold)
+        const { data: allProducts } = await supabase
+          .from('products')
+          .select('id, name, stock_quantity, low_stock_threshold')
+          .eq('seller_id', sellerData.id)
+          .gt('stock_quantity', 0)
+          .order('stock_quantity', { ascending: true });
+
+        if (allProducts) {
+          const lowStock = allProducts
+            .filter(p => p.stock_quantity <= p.low_stock_threshold)
+            .slice(0, 5);
+          setLowStockProducts(lowStock);
         }
       }
     } catch (error) {
@@ -326,6 +355,51 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
         </View>
       </View>
 
+      {/* Top Selling Products */}
+      {topProducts.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Selling Products</Text>
+          {topProducts.map((product, index) => (
+            <Card key={product.id} style={styles.productCard}>
+              <View style={styles.productRank}>
+                <Text style={styles.rankNumber}>#{index + 1}</Text>
+              </View>
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>{product.name}</Text>
+                <Text style={styles.productStats}>
+                  {product.total_sales} sold • ${product.total_revenue?.toFixed(2) || '0.00'} revenue
+                </Text>
+              </View>
+              <View style={styles.productStock}>
+                <Text style={styles.stockLabel}>Stock</Text>
+                <Text style={styles.stockValue}>{product.stock_quantity}</Text>
+              </View>
+            </Card>
+          ))}
+        </View>
+      )}
+
+      {/* Low Stock Alerts */}
+      {lowStockProducts.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Low Stock Alerts</Text>
+            <Ionicons name="warning" size={20} color="#FF9800" />
+          </View>
+          {lowStockProducts.map((product) => (
+            <Card key={product.id} style={styles.alertCard}>
+              <Ionicons name="alert-circle" size={24} color="#FF9800" />
+              <View style={styles.alertInfo}>
+                <Text style={styles.alertName}>{product.name}</Text>
+                <Text style={styles.alertText}>
+                  Only {product.stock_quantity} left (threshold: {product.low_stock_threshold})
+                </Text>
+              </View>
+            </Card>
+          ))}
+        </View>
+      )}
+
       {/* Quick Actions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -560,10 +634,83 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
   },
   errorText: {
     fontSize: 16,
+    color: '#666',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  productCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginBottom: 8,
+  },
+  productRank: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E8F5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  rankNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#34A853',
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  productStats: {
+    fontSize: 13,
+    color: '#666',
+  },
+  productStock: {
+    alignItems: 'center',
+  },
+  stockLabel: {
+    fontSize: 11,
+    color: '#999',
+    marginBottom: 2,
+  },
+  stockValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#34A853',
+  },
+  alertCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginBottom: 8,
+    backgroundColor: '#FFF3E0',
+  },
+  alertInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  alertName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  alertText: {
+    fontSize: 13,
     color: '#666',
   },
 });

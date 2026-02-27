@@ -33,6 +33,10 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
+  const [productImages, setProductImages] = useState<any[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     fetchProduct();
@@ -55,6 +59,34 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
       if (error) throw error;
       setProduct(data);
+
+      // Fetch product images
+      const { data: imagesData } = await supabase
+        .from('product_images')
+        .select('*')
+        .eq('product_id', productId)
+        .order('sort_order');
+
+      if (imagesData && imagesData.length > 0) {
+        setProductImages(imagesData);
+      }
+
+      // Fetch variants if product has them
+      if (data.has_variants) {
+        const { data: variantsData } = await supabase
+          .from('product_variants')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('is_available', true)
+          .order('sort_order');
+
+        if (variantsData && variantsData.length > 0) {
+          setVariants(variantsData);
+          // Set default variant or first available
+          const defaultVariant = variantsData.find(v => v.is_default) || variantsData[0];
+          setSelectedVariant(defaultVariant);
+        }
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
       Alert.alert('Error', 'Failed to load product details');
@@ -124,18 +156,54 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
-        {/* Product Image */}
-        {product.image_url ? (
-          <Image
-            source={{ uri: product.image_url }}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={styles.productImagePlaceholder}>
-            <Text style={styles.placeholderEmoji}>🥬</Text>
-          </View>
-        )}
+        {/* Product Image Gallery */}
+        <View>
+          {/* Main Image */}
+          {productImages.length > 0 ? (
+            <Image
+              source={{ uri: productImages[selectedImageIndex].image_url }}
+              style={styles.productImage}
+              resizeMode="cover"
+            />
+          ) : product.image_url ? (
+            <Image
+              source={{ uri: product.image_url }}
+              style={styles.productImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.productImagePlaceholder}>
+              <Text style={styles.placeholderEmoji}>🥬</Text>
+            </View>
+          )}
+
+          {/* Image Thumbnails */}
+          {productImages.length > 1 && (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.thumbnailScroll}
+              contentContainerStyle={styles.thumbnailContainer}
+            >
+              {productImages.map((img, index) => (
+                <TouchableOpacity
+                  key={img.id}
+                  onPress={() => setSelectedImageIndex(index)}
+                  style={[
+                    styles.thumbnail,
+                    selectedImageIndex === index && styles.thumbnailActive,
+                  ]}
+                >
+                  <Image
+                    source={{ uri: img.image_url }}
+                    style={styles.thumbnailImage}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
 
         {/* Product Info */}
         <View style={styles.infoContainer}>
@@ -155,9 +223,51 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           </View>
 
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+            <Text style={styles.price}>
+              ${selectedVariant 
+                ? (selectedVariant.price_override || (product.price + selectedVariant.price_adjustment)).toFixed(2)
+                : product.price.toFixed(2)}
+            </Text>
             <Text style={styles.unit}>per {product.unit}</Text>
           </View>
+
+          {/* Variant Selector */}
+          {variants.length > 0 && (
+            <View style={styles.variantSection}>
+              <Text style={styles.variantLabel}>Select Option:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.variantScroll}>
+                {variants.map((variant) => (
+                  <TouchableOpacity
+                    key={variant.id}
+                    style={[
+                      styles.variantButton,
+                      selectedVariant?.id === variant.id && styles.variantButtonActive,
+                    ]}
+                    onPress={() => setSelectedVariant(variant)}
+                  >
+                    <Text
+                      style={[
+                        styles.variantButtonText,
+                        selectedVariant?.id === variant.id && styles.variantButtonTextActive,
+                      ]}
+                    >
+                      {variant.variant_name}
+                    </Text>
+                    {variant.price_override !== null || variant.price_adjustment !== 0 ? (
+                      <Text
+                        style={[
+                          styles.variantPrice,
+                          selectedVariant?.id === variant.id && styles.variantPriceActive,
+                        ]}
+                      >
+                        ${(variant.price_override || (product.price + variant.price_adjustment)).toFixed(2)}
+                      </Text>
+                    ) : null}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {/* Stock Status */}
           <View style={styles.stockContainer}>
@@ -425,11 +535,80 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    marginTop: 16,
   },
   backButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  variantSection: {
+    marginVertical: 16,
+  },
+  variantLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  variantScroll: {
+    flexGrow: 0,
+  },
+  variantButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginRight: 8,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  variantButtonActive: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#34A853',
+  },
+  variantButtonText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  variantButtonTextActive: {
+    color: '#34A853',
+    fontWeight: '600',
+  },
+  variantPrice: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+  },
+  variantPriceActive: {
+    color: '#34A853',
+    fontWeight: '600',
+  },
+  thumbnailScroll: {
+    marginTop: 12,
+    marginHorizontal: 16,
+  },
+  thumbnailContainer: {
+    gap: 8,
+  },
+  thumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+  },
+  thumbnailActive: {
+    borderColor: '#34A853',
+    borderWidth: 3,
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 

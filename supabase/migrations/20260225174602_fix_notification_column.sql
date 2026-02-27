@@ -1,4 +1,4 @@
--- Function to notify customers when order status changes
+-- Fix notification trigger to use correct column name (related_order_id instead of related_id)
 CREATE OR REPLACE FUNCTION notify_customer_on_order_status_change()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -83,10 +83,3 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
--- Trigger for order status changes
-DROP TRIGGER IF EXISTS notify_customer_on_status_change ON orders;
-CREATE TRIGGER notify_customer_on_status_change
-    AFTER UPDATE OF status ON orders
-    FOR EACH ROW
-    EXECUTE FUNCTION notify_customer_on_order_status_change();

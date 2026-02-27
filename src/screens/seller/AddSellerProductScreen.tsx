@@ -17,7 +17,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SellerStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { LoadingSpinner } from '../../components';
+import { LoadingSpinner, VariantManager, ProductVariant, ImageGalleryManager, ProductImage } from '../../components';
 
 type Category = {
   id: string;
@@ -43,13 +43,14 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
   const [price, setPrice] = useState('');
   const [unit, setUnit] = useState('lb');
   const [stockQuantity, setStockQuantity] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('5');
   const [categoryId, setCategoryId] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [images, setImages] = useState<ProductImage[]>([]);
   const [farmName, setFarmName] = useState('');
   const [farmLocation, setFarmLocation] = useState('');
   const [isOrganic, setIsOrganic] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -97,74 +98,6 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
     }
   };
 
-  const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        await uploadImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image');
-    }
-  };
-
-  const uploadImage = async (uri: string) => {
-    if (!sellerId) {
-      Alert.alert('Error', 'Seller account not found');
-      return;
-    }
-
-    setUploadingImage(true);
-
-    try {
-      // Get file extension
-      const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `${sellerId}/${Date.now()}.${fileExt}`;
-
-      // Fetch the image as a blob
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      // Convert blob to ArrayBuffer
-      const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as ArrayBuffer);
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(blob);
-      });
-
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, arrayBuffer, {
-          contentType: `image/${fileExt}`,
-          upsert: false,
-        });
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
-      setImageUrl(publicUrl);
-      Alert.alert('Success', 'Image uploaded successfully');
-    } catch (error: any) {
-      console.error('Error uploading image:', error);
-      Alert.alert('Error', error.message || 'Failed to upload image');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleSubmit = async () => {
     // Validation
     if (!name.trim()) {
@@ -187,22 +120,68 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('products').insert({
-        seller_id: sellerId,
-        category_id: categoryId || null,
-        name: name.trim(),
-        description: description.trim() || null,
-        price: parseFloat(price),
-        unit: unit,
-        stock_quantity: parseInt(stockQuantity),
-        image_url: imageUrl.trim() || null,
-        farm_name: farmName.trim() || null,
-        farm_location: farmLocation.trim() || null,
-        is_organic: isOrganic,
-        is_available: isAvailable,
-      });
+      // Insert product
+      const { data: newProduct, error: productError } = await supabase
+        .from('products')
+        .insert({
+          seller_id: sellerId,
+          category_id: categoryId || null,
+          name: name.trim(),
+          description: description.trim() || null,
+          price: parseFloat(price),
+          unit: unit,
+          stock_quantity: parseInt(stockQuantity),
+          low_stock_threshold: parseInt(lowStockThreshold),
+          image_url: images.length > 0 ? images.find(img => img.is_primary)?.image_url || images[0].image_url : null,
+          farm_name: farmName.trim() || null,
+          farm_location: farmLocation.trim() || null,
+          is_organic: isOrganic,
+          is_available: isAvailable,
+          has_variants: variants.length > 0,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (productError) throw productError;
+
+      // Insert product images if any
+      if (images.length > 0 && newProduct) {
+        const imagesToInsert = images.map((img) => ({
+          product_id: newProduct.id,
+          image_url: img.image_url,
+          is_primary: img.is_primary,
+          sort_order: img.sort_order,
+        }));
+
+        const { error: imagesError } = await supabase
+          .from('product_images')
+          .insert(imagesToInsert);
+
+        if (imagesError) throw imagesError;
+      }
+
+      // Insert variants if any
+      if (variants.length > 0 && newProduct) {
+        const variantsToInsert = variants.map((v) => ({
+          product_id: newProduct.id,
+          variant_name: v.variant_name,
+          variant_type: v.variant_type,
+          price_adjustment: v.price_adjustment,
+          price_override: v.price_override,
+          sku: v.sku || null,
+          stock_quantity: v.stock_quantity,
+          low_stock_threshold: v.low_stock_threshold,
+          is_available: v.is_available,
+          is_default: v.is_default,
+          sort_order: v.sort_order,
+        }));
+
+        const { error: variantsError } = await supabase
+          .from('product_variants')
+          .insert(variantsToInsert);
+
+        if (variantsError) throw variantsError;
+      }
 
       Alert.alert('Success', 'Product added successfully', [
         {
@@ -294,16 +273,30 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
         </View>
 
         {/* Stock Quantity */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Stock Quantity *</Text>
-          <TextInput
-            style={styles.input}
-            value={stockQuantity}
-            onChangeText={setStockQuantity}
-            placeholder="0"
-            placeholderTextColor="#999"
-            keyboardType="number-pad"
-          />
+        <View style={styles.row}>
+          <View style={[styles.field, styles.flex1]}>
+            <Text style={styles.label}>Stock Quantity *</Text>
+            <TextInput
+              style={styles.input}
+              value={stockQuantity}
+              onChangeText={setStockQuantity}
+              placeholder="0"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+            />
+          </View>
+
+          <View style={[styles.field, styles.flex1, styles.marginLeft]}>
+            <Text style={styles.label}>Low Stock Alert</Text>
+            <TextInput
+              style={styles.input}
+              value={lowStockThreshold}
+              onChangeText={setLowStockThreshold}
+              placeholder="5"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+            />
+          </View>
         </View>
 
         {/* Category */}
@@ -332,37 +325,12 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
           </ScrollView>
         </View>
 
-        {/* Product Image */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Product Image</Text>
-          
-          {imageUrl ? (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: imageUrl }} style={styles.productImage} />
-              <TouchableOpacity
-                style={styles.removeImageButton}
-                onPress={() => setImageUrl('')}
-              >
-                <Ionicons name="close-circle" size={32} color="#f44336" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.uploadButton}
-              onPress={pickImage}
-              disabled={uploadingImage}
-            >
-              {uploadingImage ? (
-                <ActivityIndicator size="large" color="#34A853" />
-              ) : (
-                <>
-                  <Ionicons name="cloud-upload-outline" size={48} color="#34A853" />
-                  <Text style={styles.uploadButtonText}>Tap to upload image</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+        {/* Product Images Gallery */}
+        <ImageGalleryManager
+          images={images}
+          onImagesChange={setImages}
+          maxImages={5}
+        />
 
         {/* Switches */}
         <View style={styles.field}>
@@ -376,6 +344,13 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
             />
           </View>
         </View>
+
+        {/* Product Variants */}
+        <VariantManager
+          variants={variants}
+          basePrice={parseFloat(price) || 0}
+          onVariantsChange={setVariants}
+        />
 
         <View style={styles.field}>
           <View style={styles.switchRow}>

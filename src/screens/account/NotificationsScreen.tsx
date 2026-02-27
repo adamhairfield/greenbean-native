@@ -15,12 +15,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Bell, Package, DollarSign, Truck, Info, CheckCircle } from 'lucide-react-native';
 import { LoadingSpinner } from '../../components';
 
-type Notification = {
+interface Notification {
   id: string;
   title: string;
   message: string;
   type: string;
-  related_id: string | null;
+  related_order_id: string | null;
   is_read: boolean;
   created_at: string;
 };
@@ -107,8 +107,8 @@ const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigation })
 
     // Navigate based on type
     if (notification.type === 'order' || notification.type === 'refund') {
-      if (notification.related_id) {
-        navigation.navigate('OrderDetail', { orderId: notification.related_id });
+      if (notification.related_order_id) {
+        navigation.navigate('OrderDetail', { orderId: notification.related_order_id });
       }
     }
   };

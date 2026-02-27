@@ -9,10 +9,11 @@ import {
   Alert,
   Switch,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SellerStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
-import { LoadingSpinner } from '../../components';
+import { LoadingSpinner, VariantManager, ProductVariant, ImageGalleryManager, ProductImage } from '../../components';
 
 type Category = {
   id: string;
@@ -26,6 +27,7 @@ type Product = {
   price: number;
   unit: string;
   stock_quantity: number;
+  low_stock_threshold: number;
   category_id: string | null;
   image_url: string | null;
   farm_name: string | null;
@@ -55,12 +57,14 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
   const [price, setPrice] = useState('');
   const [unit, setUnit] = useState('lb');
   const [stockQuantity, setStockQuantity] = useState('');
+  const [lowStockThreshold, setLowStockThreshold] = useState('5');
   const [categoryId, setCategoryId] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [images, setImages] = useState<ProductImage[]>([]);
   const [farmName, setFarmName] = useState('');
   const [farmLocation, setFarmLocation] = useState('');
   const [isOrganic, setIsOrganic] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -93,12 +97,51 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
         setPrice(productData.price.toString());
         setUnit(productData.unit);
         setStockQuantity(productData.stock_quantity.toString());
+        setLowStockThreshold(productData.low_stock_threshold.toString());
         setCategoryId(productData.category_id || '');
-        setImageUrl(productData.image_url || '');
         setFarmName(productData.farm_name || '');
         setFarmLocation(productData.farm_location || '');
         setIsOrganic(productData.is_organic);
         setIsAvailable(productData.is_available);
+
+        // Fetch product images
+        const { data: imagesData } = await supabase
+          .from('product_images')
+          .select('*')
+          .eq('product_id', productId)
+          .order('sort_order');
+
+        if (imagesData && imagesData.length > 0) {
+          setImages(imagesData.map(img => ({
+            id: img.id,
+            image_url: img.image_url,
+            is_primary: img.is_primary,
+            sort_order: img.sort_order,
+          })));
+        }
+
+        // Fetch variants
+        const { data: variantsData } = await supabase
+          .from('product_variants')
+          .select('*')
+          .eq('product_id', productId)
+          .order('sort_order');
+
+        if (variantsData) {
+          setVariants(variantsData.map(v => ({
+            id: v.id,
+            variant_name: v.variant_name,
+            variant_type: v.variant_type,
+            price_adjustment: v.price_adjustment,
+            price_override: v.price_override,
+            sku: v.sku || '',
+            stock_quantity: v.stock_quantity,
+            low_stock_threshold: v.low_stock_threshold,
+            is_available: v.is_available,
+            is_default: v.is_default,
+            sort_order: v.sort_order,
+          })));
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -125,7 +168,8 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
     setSaving(true);
 
     try {
-      const { error } = await supabase
+      // Update product
+      const { error: productError } = await supabase
         .from('products')
         .update({
           name: name.trim(),
@@ -133,16 +177,69 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
           price: parseFloat(price),
           unit: unit,
           stock_quantity: parseInt(stockQuantity),
+          low_stock_threshold: parseInt(lowStockThreshold),
           category_id: categoryId || null,
-          image_url: imageUrl.trim() || null,
+          image_url: images.length > 0 ? images.find(img => img.is_primary)?.image_url || images[0].image_url : null,
           farm_name: farmName.trim() || null,
           farm_location: farmLocation.trim() || null,
           is_organic: isOrganic,
           is_available: isAvailable,
+          has_variants: variants.length > 0,
         })
         .eq('id', productId);
 
-      if (error) throw error;
+      if (productError) throw productError;
+
+      // Delete existing product images
+      await supabase
+        .from('product_images')
+        .delete()
+        .eq('product_id', productId);
+
+      // Insert updated product images
+      if (images.length > 0) {
+        const imagesToInsert = images.map((img) => ({
+          product_id: productId,
+          image_url: img.image_url,
+          is_primary: img.is_primary,
+          sort_order: img.sort_order,
+        }));
+
+        const { error: imagesError } = await supabase
+          .from('product_images')
+          .insert(imagesToInsert);
+
+        if (imagesError) throw imagesError;
+      }
+
+      // Delete existing variants
+      await supabase
+        .from('product_variants')
+        .delete()
+        .eq('product_id', productId);
+
+      // Insert updated variants
+      if (variants.length > 0) {
+        const variantsToInsert = variants.map((v) => ({
+          product_id: productId,
+          variant_name: v.variant_name,
+          variant_type: v.variant_type,
+          price_adjustment: v.price_adjustment,
+          price_override: v.price_override,
+          sku: v.sku || null,
+          stock_quantity: v.stock_quantity,
+          low_stock_threshold: v.low_stock_threshold,
+          is_available: v.is_available,
+          is_default: v.is_default,
+          sort_order: v.sort_order,
+        }));
+
+        const { error: variantsError } = await supabase
+          .from('product_variants')
+          .insert(variantsToInsert);
+
+        if (variantsError) throw variantsError;
+      }
 
       Alert.alert('Success', 'Product updated successfully', [
         {
@@ -156,6 +253,74 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDuplicate = async () => {
+    if (!product) return;
+
+    Alert.alert(
+      'Duplicate Product',
+      'Create a copy of this product?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Duplicate',
+          onPress: async () => {
+            try {
+              setSaving(true);
+              
+              // Get seller ID
+              const { data: sellerData } = await supabase
+                .from('sellers')
+                .select('id')
+                .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+                .single();
+
+              if (!sellerData) throw new Error('Seller not found');
+
+              // Create duplicate with "(Copy)" appended to name
+              const { data: newProduct, error } = await supabase
+                .from('products')
+                .insert({
+                  seller_id: sellerData.id,
+                  category_id: product.category_id,
+                  name: `${product.name} (Copy)`,
+                  description: product.description,
+                  price: product.price,
+                  unit: product.unit,
+                  stock_quantity: 0, // Start with 0 stock for duplicated product
+                  low_stock_threshold: product.low_stock_threshold,
+                  image_url: product.image_url,
+                  farm_name: product.farm_name,
+                  farm_location: product.farm_location,
+                  is_organic: product.is_organic,
+                  is_available: false, // Start as inactive
+                })
+                .select()
+                .single();
+
+              if (error) throw error;
+
+              Alert.alert('Success', 'Product duplicated successfully', [
+                {
+                  text: 'Edit Copy',
+                  onPress: () => navigation.replace('EditSellerProduct', { productId: newProduct.id }),
+                },
+                {
+                  text: 'OK',
+                  onPress: () => navigation.goBack(),
+                },
+              ]);
+            } catch (error: any) {
+              console.error('Error duplicating product:', error);
+              Alert.alert('Error', 'Failed to duplicate product');
+            } finally {
+              setSaving(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDelete = () => {
@@ -264,16 +429,30 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
           </View>
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Stock Quantity *</Text>
-          <TextInput
-            style={styles.input}
-            value={stockQuantity}
-            onChangeText={setStockQuantity}
-            placeholder="0"
-            placeholderTextColor="#999"
-            keyboardType="number-pad"
-          />
+        <View style={styles.row}>
+          <View style={[styles.field, styles.flex1]}>
+            <Text style={styles.label}>Stock Quantity *</Text>
+            <TextInput
+              style={styles.input}
+              value={stockQuantity}
+              onChangeText={setStockQuantity}
+              placeholder="0"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+            />
+          </View>
+
+          <View style={[styles.field, styles.flex1, styles.marginLeft]}>
+            <Text style={styles.label}>Low Stock Alert</Text>
+            <TextInput
+              style={styles.input}
+              value={lowStockThreshold}
+              onChangeText={setLowStockThreshold}
+              placeholder="5"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+            />
+          </View>
         </View>
 
         <View style={styles.field}>
@@ -293,17 +472,12 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
           </ScrollView>
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Image URL</Text>
-          <TextInput
-            style={styles.input}
-            value={imageUrl}
-            onChangeText={setImageUrl}
-            placeholder="https://..."
-            placeholderTextColor="#999"
-            autoCapitalize="none"
-          />
-        </View>
+        {/* Product Images Gallery */}
+        <ImageGalleryManager
+          images={images}
+          onImagesChange={setImages}
+          maxImages={5}
+        />
 
         <View style={styles.field}>
           <Text style={styles.label}>Farm Name</Text>
@@ -339,6 +513,13 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
           </View>
         </View>
 
+        {/* Product Variants */}
+        <VariantManager
+          variants={variants}
+          basePrice={parseFloat(price) || 0}
+          onVariantsChange={setVariants}
+        />
+
         <View style={styles.field}>
           <View style={styles.switchRow}>
             <Text style={styles.label}>Available for Sale</Text>
@@ -350,6 +531,11 @@ const EditSellerProductScreen: React.FC<EditSellerProductScreenProps> = ({
             />
           </View>
         </View>
+
+        {/* Duplicate Button */}
+        <TouchableOpacity style={styles.duplicateButton} onPress={handleDuplicate}>
+          <Text style={styles.duplicateButtonText}>Duplicate Product</Text>
+        </TouchableOpacity>
 
         {/* Delete Button */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
@@ -472,19 +658,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  duplicateButton: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#FF9800',
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  duplicateButtonText: {
+    color: '#FF9800',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   deleteButton: {
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#f44336',
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 16,
   },
   deleteButtonText: {
     color: '#f44336',
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   footer: {
     position: 'absolute',

@@ -63,15 +63,21 @@ const DeliveryMapScreen = () => {
       setDriverLocation(driverPos);
 
       // Get all orders ready for delivery or out for delivery
-      const { data: orders } = await supabase
+      const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('id')
         .in('status', ['ready_for_delivery', 'out_for_delivery']);
 
+      console.log('Orders query result:', { orders, ordersError, count: orders?.length });
+
       if (orders && orders.length > 0) {
         const orderIds = orders.map(o => o.id);
+        console.log('Fetching route for order IDs:', orderIds);
         const optimizedRoute = await getOptimizedRoute(orderIds, driverPos);
+        console.log('Optimized route result:', optimizedRoute);
         setRoute(optimizedRoute);
+      } else {
+        console.log('No orders found with ready_for_delivery or out_for_delivery status');
       }
     } catch (error) {
       console.error('Error loading route:', error);
