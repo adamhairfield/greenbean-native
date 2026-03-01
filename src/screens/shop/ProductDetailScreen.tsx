@@ -14,6 +14,7 @@ import { ShopStackParamList } from '../../navigation/types';
 import { supabase } from '../../lib/supabase';
 import { Database } from '../../types/database';
 import { useCart } from '../../contexts/CartContext';
+import { useRecentlyViewed } from '../../contexts/RecentlyViewedContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LoadingSpinner } from '../../components';
 
@@ -30,6 +31,7 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 }) => {
   const { productId } = route.params;
   const { addItem } = useCart();
+  const { addRecentlyViewed } = useRecentlyViewed();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -40,6 +42,8 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
   useEffect(() => {
     fetchProduct();
+    // Track this product as recently viewed
+    addRecentlyViewed(productId);
   }, [productId]);
 
   // Refresh product data when screen comes into focus
@@ -210,7 +214,13 @@ const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <Text style={styles.productName}>{product.name}</Text>
-              <Text style={styles.farmName}>{product.farm_name}</Text>
+              {product.seller_id ? (
+                <TouchableOpacity onPress={() => navigation.navigate('SellerProfile', { sellerId: product.seller_id! })}>
+                  <Text style={styles.farmNameLink}>{product.farm_name}</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.farmName}>{product.farm_name}</Text>
+              )}
               {product.farm_location && (
                 <Text style={styles.farmLocation}>📍 {product.farm_location}</Text>
               )}
@@ -394,16 +404,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
   },
   farmName: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 4,
+    marginTop: 4,
+  },
+  farmNameLink: {
+    fontSize: 16,
+    color: '#34A853',
+    marginTop: 4,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   farmLocation: {
     fontSize: 14,
-    color: '#999',
+    color: '#666',
+    marginTop: 4,
   },
   organicBadge: {
     backgroundColor: '#E8F5E9',

@@ -204,35 +204,83 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {/* Product Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Product Name *</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="e.g., Organic Tomatoes"
-            placeholderTextColor="#999"
-          />
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${Math.min(100, (name ? 25 : 0) + (price ? 25 : 0) + (stockQuantity ? 25 : 0) + (images.length > 0 ? 25 : 0))}%` }]} />
+          </View>
+          <Text style={styles.progressText}>
+            {name && price && stockQuantity && images.length > 0 ? 'Ready to publish!' : 'Fill in the required fields'}
+          </Text>
         </View>
 
-        {/* Description */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Describe your product..."
-            placeholderTextColor="#999"
-            multiline
-            numberOfLines={4}
-          />
+        {/* Basic Information Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={24} color="#34A853" />
+            <Text style={styles.sectionTitle}>Basic Information</Text>
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Product Name *</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g., Organic Tomatoes"
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Describe your product, growing methods, taste, etc."
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          {/* Category */}
+          <View style={styles.field}>
+            <Text style={styles.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {categories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryButton,
+                    categoryId === cat.id && styles.categoryButtonActive,
+                  ]}
+                  onPress={() => setCategoryId(cat.id)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryButtonText,
+                      categoryId === cat.id && styles.categoryButtonTextActive,
+                    ]}
+                  >
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
         </View>
 
-        {/* Price and Unit */}
-        <View style={styles.row}>
-          <View style={[styles.field, styles.flex1]}>
+        {/* Pricing & Inventory Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="pricetag" size={24} color="#34A853" />
+            <Text style={styles.sectionTitle}>Pricing & Inventory</Text>
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.field, styles.flex1]}>
             <Text style={styles.label}>Price *</Text>
             <TextInput
               style={styles.input}
@@ -270,11 +318,10 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
               </ScrollView>
             </View>
           </View>
-        </View>
+          </View>
 
-        {/* Stock Quantity */}
-        <View style={styles.row}>
-          <View style={[styles.field, styles.flex1]}>
+          <View style={styles.row}>
+            <View style={[styles.field, styles.flex1]}>
             <Text style={styles.label}>Stock Quantity *</Text>
             <TextInput
               style={styles.input}
@@ -297,45 +344,57 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
               keyboardType="number-pad"
             />
           </View>
+          </View>
         </View>
 
-        {/* Category */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Category</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                style={[
-                  styles.categoryButton,
-                  categoryId === cat.id && styles.categoryButtonActive,
-                ]}
-                onPress={() => setCategoryId(cat.id)}
-              >
-                <Text
-                  style={[
-                    styles.categoryButtonText,
-                    categoryId === cat.id && styles.categoryButtonTextActive,
-                  ]}
-                >
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        {/* Product Images Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="images" size={24} color="#34A853" />
+            <Text style={styles.sectionTitle}>Product Images</Text>
+            {images.length === 0 && <Text style={styles.requiredBadge}>Required</Text>}
+          </View>
+          <Text style={styles.sectionDescription}>
+            Add photos showing your product from different angles. First image will be the main photo.
+          </Text>
+          <ImageGalleryManager
+            images={images}
+            onImagesChange={setImages}
+            maxImages={5}
+          />
         </View>
 
-        {/* Product Images Gallery */}
-        <ImageGalleryManager
-          images={images}
-          onImagesChange={setImages}
-          maxImages={5}
-        />
+        {/* Product Variants Section */}
+        {parseFloat(price) > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="options" size={24} color="#34A853" />
+              <Text style={styles.sectionTitle}>Product Variants</Text>
+              <Text style={styles.optionalBadge}>Optional</Text>
+            </View>
+            <Text style={styles.sectionDescription}>
+              Offer different sizes, packaging, or quality tiers at different prices.
+            </Text>
+            <VariantManager
+              variants={variants}
+              basePrice={parseFloat(price) || 0}
+              onVariantsChange={setVariants}
+            />
+          </View>
+        )}
 
-        {/* Switches */}
-        <View style={styles.field}>
-          <View style={styles.switchRow}>
-            <Text style={styles.label}>Organic</Text>
+        {/* Product Settings Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="settings" size={24} color="#34A853" />
+            <Text style={styles.sectionTitle}>Product Settings</Text>
+          </View>
+
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Organic Certified</Text>
+              <Text style={styles.settingDescription}>Mark if this product is certified organic</Text>
+            </View>
             <Switch
               value={isOrganic}
               onValueChange={setIsOrganic}
@@ -343,18 +402,12 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
               thumbColor="#fff"
             />
           </View>
-        </View>
 
-        {/* Product Variants */}
-        <VariantManager
-          variants={variants}
-          basePrice={parseFloat(price) || 0}
-          onVariantsChange={setVariants}
-        />
-
-        <View style={styles.field}>
-          <View style={styles.switchRow}>
-            <Text style={styles.label}>Available for Sale</Text>
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Available for Sale</Text>
+              <Text style={styles.settingDescription}>Customers can purchase this product</Text>
+            </View>
             <Switch
               value={isAvailable}
               onValueChange={setIsAvailable}
@@ -384,7 +437,7 @@ const AddSellerProductScreen: React.FC<AddSellerProductScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   content: {
     flex: 1,
@@ -393,21 +446,118 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
+  progressContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#34A853',
+    borderRadius: 3,
+  },
+  progressText: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+  },
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+    flex: 1,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  requiredBadge: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+    backgroundColor: '#f44336',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  optionalBadge: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666',
+    backgroundColor: '#e0e0e0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  settingInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  settingDescription: {
+    fontSize: 13,
+    color: '#666',
+  },
   field: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
     color: '#333',
   },
@@ -425,9 +575,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   pickerContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 8,
   },
@@ -452,15 +602,16 @@ const styles = StyleSheet.create({
   categoryButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
   },
   categoryButtonActive: {
-    backgroundColor: '#34A853',
+    backgroundColor: '#E8F5E9',
     borderColor: '#34A853',
+    borderWidth: 2,
   },
   categoryButtonText: {
     fontSize: 14,
@@ -489,20 +640,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
   },
   submitButton: {
     backgroundColor: '#34A853',
-    paddingVertical: 16,
-    borderRadius: 8,
+    paddingVertical: 18,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#34A853',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonDisabled: {
     backgroundColor: '#ccc',
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   uploadButton: {
     backgroundColor: '#fff',

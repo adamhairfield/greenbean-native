@@ -3,8 +3,10 @@ import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ShopStackParamList } from './types';
 import HomeScreen from '../screens/shop/HomeScreen';
+import SearchScreen from '../screens/shop/SearchScreen';
 import CategoryScreen from '../screens/shop/CategoryScreen';
 import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
+import SellerProfileScreen from '../screens/shop/SellerProfileScreen';
 import NotificationsScreen from '../screens/account/NotificationsScreen';
 import { NotificationButton, CustomBackButton, HeaderLogo } from '../components';
 import { useNavigation } from '@react-navigation/native';
@@ -34,6 +36,13 @@ const ShopNavigator = () => {
         }}
       />
       <Stack.Screen 
+        name="Search" 
+        component={SearchScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
         name="Category" 
         component={CategoryScreen}
         options={({ route }) => ({
@@ -50,6 +59,16 @@ const ShopNavigator = () => {
           header: () => {
             const StandardHeader = require('../components/StandardHeader').default;
             return <StandardHeader title="Product Details" />;
+          },
+        }}
+      />
+      <Stack.Screen 
+        name="SellerProfile" 
+        component={SellerProfileScreen}
+        options={{
+          header: () => {
+            const StandardHeader = require('../components/StandardHeader').default;
+            return <StandardHeader title="Farm Profile" />;
           },
         }}
       />

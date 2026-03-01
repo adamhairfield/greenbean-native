@@ -435,6 +435,22 @@ const SellerDashboardScreen: React.FC<SellerDashboardScreenProps> = ({
           <Ionicons name="chevron-forward" size={24} color="#999" />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('EditSellerProfile')}
+        >
+          <View style={styles.actionIcon}>
+            <Ionicons name="person-outline" size={24} color="#34A853" />
+          </View>
+          <View style={styles.actionContent}>
+            <Text style={styles.actionTitle}>Edit Farm Profile</Text>
+            <Text style={styles.actionSubtitle}>
+              Update your farm story, photos, and contact info
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#999" />
+        </TouchableOpacity>
+
         {/* Disconnect Stripe Button - Only show if connected */}
         {seller.stripe_account_id && (
           <TouchableOpacity

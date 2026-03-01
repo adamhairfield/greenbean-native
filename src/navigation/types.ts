@@ -25,8 +25,10 @@ export type MainTabParamList = {
 
 export type ShopStackParamList = {
   Home: undefined;
+  Search: undefined;
   Category: { categoryId: string; categoryName: string };
   ProductDetail: { productId: string };
+  SellerProfile: { sellerId: string };
   Notifications: undefined;
 };
 
@@ -70,6 +72,7 @@ export type SellerStackParamList = {
   SellerProducts: undefined;
   AddSellerProduct: undefined;
   EditSellerProduct: { productId: string };
+  EditSellerProfile: undefined;
 };
 
 export type DriverStackParamList = {

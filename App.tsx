@@ -7,6 +7,7 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { CartProvider } from './src/contexts/CartContext';
 import { FavoritesProvider } from './src/contexts/FavoritesContext';
 import { NotificationProvider } from './src/contexts/NotificationContext';
+import { RecentlyViewedProvider } from './src/contexts/RecentlyViewedContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
@@ -19,10 +20,12 @@ export default function App() {
           <AuthProvider>
             <NotificationProvider>
               <FavoritesProvider>
-                <CartProvider>
-                  <RootNavigator />
-                  <StatusBar style="auto" />
-                </CartProvider>
+                <RecentlyViewedProvider>
+                  <CartProvider>
+                    <RootNavigator />
+                    <StatusBar style="auto" />
+                  </CartProvider>
+                </RecentlyViewedProvider>
               </FavoritesProvider>
             </NotificationProvider>
           </AuthProvider>

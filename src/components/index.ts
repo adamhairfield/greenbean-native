@@ -13,3 +13,8 @@ export { default as BundleManager } from './BundleManager';
 export type { BundleItem } from './BundleManager';
 export { default as ImageGalleryManager } from './ImageGalleryManager';
 export type { ProductImage } from './ImageGalleryManager';
+export { default as SearchBar } from './SearchBar';
+export { default as FilterModal } from './FilterModal';
+export type { FilterOptions } from './FilterModal';
+export { default as SortModal } from './SortModal';
+export type { SortOption } from './SortModal';

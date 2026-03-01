@@ -5,6 +5,7 @@ import SellerDashboardScreen from '../screens/seller/SellerDashboardScreen';
 import SellerProductsScreen from '../screens/seller/SellerProductsScreen';
 import AddSellerProductScreen from '../screens/seller/AddSellerProductScreen';
 import EditSellerProductScreen from '../screens/seller/EditSellerProductScreen';
+import EditSellerProfileScreen from '../screens/seller/EditSellerProfileScreen';
 import { NotificationButton, CustomBackButton } from '../components';
 import { useNavigation } from '@react-navigation/native';
 
@@ -43,6 +44,11 @@ const SellerNavigator = () => {
         name="EditSellerProduct" 
         component={EditSellerProductScreen}
         options={{ title: 'Edit Product' }}
+      />
+      <Stack.Screen 
+        name="EditSellerProfile" 
+        component={EditSellerProfileScreen}
+        options={{ title: 'Edit Profile' }}
       />
     </Stack.Navigator>
   );
